@@ -4,10 +4,12 @@ import ShortUniqueId from 'short-unique-id';
 import clipboard from '../assets/clipboard.png';
 import PlayerCard from '../components/PlayerCard';
 import { nameAtom } from '../store/name';
+import { playersAtom } from '../store/players';
 
 const NewGame = () => {
     const { randomUUID } = new ShortUniqueId({ length: 8 });
     const [name] = useAtom(nameAtom);
+    const [players] = useAtom(playersAtom);
 
     return (
         <div className='flex flex-col gap-20 items-center'>
@@ -25,10 +27,14 @@ const NewGame = () => {
             <div className='border rounded-lg'>
                 <h2 className='text-2xl p-4'>Players:</h2>
                 <ul className='flex flex-col gap-2 w-64 h-32  items-center m-2 overflow-y-scroll'>
-                    <PlayerCard name={name} backgroundColor={'#FFFD82'} />
-                    <PlayerCard name='Player1' backgroundColor={'#E84855'} />
-                    <PlayerCard name='Player2' backgroundColor={'#FF9B73'} />
-                    <PlayerCard name='Player3' backgroundColor={'#1B998B'} />
+                    <PlayerCard name={name} backgroundColor='#FFFD82' />
+                    {players.map(player => (
+                        <PlayerCard
+                            key={player.id}
+                            name={player.name}
+                            backgroundColor={player.backgroundColor}
+                        />
+                    ))}
                 </ul>
             </div>
             <Link
