@@ -2,18 +2,23 @@ import { atom } from 'jotai';
 
 export const playersAtom = atom([
     {
-        name: 'Player1',
+        name: 'Käk',
         backgroundColor: '#E84855',
         id: 1
     },
     {
-        name: 'Player2',
+        name: 'Kök',
         backgroundColor: '#FF9B73',
         id: 2
     },
     {
-        name: 'Player3',
+        name: 'Arsch',
         backgroundColor: '#1B998B',
         id: 3
+    },
+    {
+        name: 'Geilo',
+        backgroundColor: '#FFFD82',
+        id: 4
     }
 ]);
