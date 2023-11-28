@@ -6,6 +6,7 @@ import App from './App.jsx';
 import Layout from './Layout.jsx';
 import ErrorPage from './error-page.jsx';
 import './index.css';
+import Game from './routes/Game.jsx';
 import Join from './routes/Join.jsx';
 import NewGame from './routes/NewGame.jsx';
 
@@ -25,6 +26,10 @@ const router = createBrowserRouter([
             {
                 path: '/join',
                 element: <Join />
+            },
+            {
+                path: '/game',
+                element: <Game />
             }
         ]
     }

@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+
 const Join = () => {
     return (
         <div className='flex flex-col gap-20 items-center'>
@@ -14,9 +16,12 @@ const Join = () => {
                     </label>
                 </div>
             </div>
-            <button className='bg-[#E84855] text-black text-center text-xl py-4 px-6 border border-black rounded shadow-sm shadow-black'>
+            <Link
+                to='/game'
+                className='bg-[#E84855] text-black text-center text-xl py-4 px-6 border border-black rounded shadow-sm shadow-black'
+            >
                 Join Lobby
-            </button>
+            </Link>
         </div>
     );
 };

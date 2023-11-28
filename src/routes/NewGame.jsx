@@ -1,4 +1,5 @@
 import { useAtom } from 'jotai';
+import { Link } from 'react-router-dom';
 import ShortUniqueId from 'short-unique-id';
 import clipboard from '../assets/clipboard.png';
 import PlayerCard from '../components/PlayerCard';
@@ -30,9 +31,12 @@ const NewGame = () => {
                     <PlayerCard name='Player3' backgroundColor={'#1B998B'} />
                 </ul>
             </div>
-            <button className='bg-[#1B998B] text-black text-xl py-4 px-6 border border-black rounded shadow-sm shadow-black'>
+            <Link
+                to='/game'
+                className='bg-[#1B998B] text-black text-xl py-4 px-6 border border-black rounded shadow-sm shadow-black'
+            >
                 Start Game
-            </button>
+            </Link>
         </div>
     );
 };
