@@ -9,7 +9,7 @@ const Layout = () => {
 
     console.log(color);
     return (
-        <div className='flex flex-col p-8 items-center'>
+        <div className='flex flex-col p-12 items-center'>
             <Link to='/'>
                 <h1
                     className='text-3xl underline basis-4/5 text-center mb-12'
