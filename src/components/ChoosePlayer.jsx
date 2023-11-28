@@ -10,7 +10,7 @@ const ChoosePlayer = () => {
                 {players.map(player => (
                     <div
                         key={player.id}
-                        className={`bg-[${player.backgroundColor}] rounded-lg shadow-xl p-4`}
+                        className={`bg-[${player.backgroundColor}] rounded-lg shadow-xl py-4 px-10`}
                     >
                         <h2 className='text-2xl text-center text-black'>
                             {player.name}

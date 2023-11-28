@@ -8,7 +8,7 @@ export const playersAtom = atom([
     },
     {
         name: 'Kök',
-        backgroundColor: '#1B998B',
+        backgroundColor: '#FF9B71',
         id: 2
     },
     {
