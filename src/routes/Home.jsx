@@ -7,7 +7,10 @@ const Home = () => {
                 Mismatched Mysteries
             </h1>
             <div className='flex flex-col gap-14'>
-                <Link className='bg-[#FFFD82] text-black text-center text-xl py-4 px-6 border border-black rounded shadow-sm shadow-black'>
+                <Link
+                    to='newGame'
+                    className='bg-[#FFFD82] text-black text-center text-xl py-4 px-6 border border-black rounded shadow-sm shadow-black'
+                >
                     Start New Game
                 </Link>
                 <Link

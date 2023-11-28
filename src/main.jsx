@@ -3,9 +3,11 @@ import ReactDOM from 'react-dom/client';
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 
 import App from './App.jsx';
+import Layout from './Layout.jsx';
 import ErrorPage from './error-page.jsx';
 import './index.css';
 import Join from './routes/Join.jsx';
+import NewGame from './routes/NewGame.jsx';
 
 const router = createBrowserRouter([
     {
@@ -14,8 +16,17 @@ const router = createBrowserRouter([
         errorElement: <ErrorPage />
     },
     {
-        path: '/join',
-        element: <Join />
+        element: <Layout />,
+        children: [
+            {
+                path: '/newGame',
+                element: <NewGame />
+            },
+            {
+                path: '/join',
+                element: <Join />
+            }
+        ]
     }
 ]);
 
