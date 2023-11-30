@@ -24,6 +24,10 @@ const router = createBrowserRouter([
                 element: <NewGame />
             },
             {
+                path: '/newGame/:id',
+                element: <NewGame />
+            },
+            {
                 path: '/join',
                 element: <Join />
             },
