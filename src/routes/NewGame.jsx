@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import ShortUniqueId from 'short-unique-id';
 import clipboard from '../assets/clipboard.png';
 import PlayerCard from '../components/PlayerCard';
-import { socket } from '../socket';
 import { nameAtom } from '../store/name';
 import { playersAtom } from '../store/players';
 
@@ -12,7 +11,7 @@ const NewGame = () => {
     const [name] = useAtom(nameAtom);
     const [players] = useAtom(playersAtom);
 
-    socket.on('connect', console.log('Connected!'));
+    // socket.on('connect', console.log('Connected!'));
 
     return (
         <div className='flex flex-col gap-20 items-center'>
