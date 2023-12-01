@@ -7,7 +7,6 @@ const Layout = () => {
         headingColors[Math.floor(Math.random() * headingColors.length)];
     const [color] = useState(randomColor);
 
-    console.log(color);
     return (
         <div className='flex flex-col p-12 items-center'>
             <Link to='/'>
