@@ -1,5 +1,6 @@
 import { useAtom } from 'jotai';
 import { useNavigate } from 'react-router-dom';
+import Button from '../components/Button';
 import { idAtom, nameAtom } from '../store/name';
 
 const Home = () => {
@@ -47,18 +48,12 @@ const Home = () => {
                 </div>
             </div>
             <div className='flex flex-col gap-14'>
-                <button
-                    onClick={e => handleNewGame(e)}
-                    className='bg-[#FFFD82] text-black text-center text-xl py-4 px-6 border border-black rounded shadow-sm shadow-black'
-                >
+                <Button color={'#FFFD82'} handler={e => handleNewGame(e)}>
                     Start New Game
-                </button>
-                <button
-                    onClick={e => handleJoinLobby(e)}
-                    className='bg-[#E84855] text-black text-center text-xl py-4 px-6 border border-black rounded shadow-sm shadow-black'
-                >
+                </Button>
+                <Button color={'#E84855'} handler={e => handleJoinLobby(e)}>
                     Join Lobby
-                </button>
+                </Button>
             </div>
         </div>
     );
