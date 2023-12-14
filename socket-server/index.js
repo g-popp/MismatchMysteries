@@ -22,6 +22,16 @@ io.on('connection', socket => {
         socket.join(roomId);
         socket.emit('lobbyCreated', roomId);
     });
+
+    socket.on('joinLobby', roomId => {
+        if (rooms[roomId]) {
+            socket.join(roomId);
+            rooms[roomId][socket.id] = {};
+            io.to(roomId).emit('updateLobby', Object.keys(rooms[roomId]));
+        } else {
+            socket.emit('error', 'Room does not exist');
+        }
+    });
 });
 
 server.listen(4000, () => {
