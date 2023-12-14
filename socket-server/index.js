@@ -36,14 +36,15 @@ io.on('connection', socket => {
     });
 
     socket.on('disconnect', () => {
-    // Remove the user from the room and update other members
-    Object.keys(rooms).forEach(roomId => {
-      if (rooms[roomId][socket.id]) {
-        delete rooms[roomId][socket.id];
-        io.to(roomId).emit('updateLobby', Object.keys(rooms[roomId]));
-      }
+        // Remove the user from the room and update other members
+        Object.keys(rooms).forEach(roomId => {
+            if (rooms[roomId][socket.id]) {
+                delete rooms[roomId][socket.id];
+                io.to(roomId).emit('updateLobby', Object.keys(rooms[roomId]));
+            }
+        });
+        console.log('Client disconnected', socket.id);
     });
-    console.log('Client disconnected', socket.id);
 });
 
 server.listen(4000, () => {
