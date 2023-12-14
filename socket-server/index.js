@@ -1,6 +1,6 @@
 import express from 'express';
-import { randomUUID } from 'node:crypto';
 import { createServer } from 'node:http';
+import ShortUniqueId from 'short-unique-id';
 import { Server } from 'socket.io';
 
 const app = express();
@@ -10,6 +10,8 @@ const io = new Server(server, {
         origin: 'http://localhost:5173'
     }
 });
+
+const { randomUUID } = new ShortUniqueId({ length: 8 });
 
 let rooms = {};
 
