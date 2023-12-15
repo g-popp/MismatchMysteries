@@ -4,6 +4,7 @@ import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 
 import App from './App.jsx';
 import Layout from './Layout.jsx';
+import { SocketContext, socket } from './context/socket.js';
 import ErrorPage from './error-page.jsx';
 import './index.css';
 import Game from './routes/Game.jsx';
@@ -41,6 +42,8 @@ const router = createBrowserRouter([
 
 ReactDOM.createRoot(document.getElementById('root')).render(
     <React.StrictMode>
-        <RouterProvider router={router} />
+        <SocketContext.Provider value={socket}>
+            <RouterProvider router={router} />
+        </SocketContext.Provider>
     </React.StrictMode>
 );
