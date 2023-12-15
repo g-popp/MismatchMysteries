@@ -1,11 +1,13 @@
 import { useAtom } from 'jotai';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '../components/Button';
-import { socket } from '../socket';
+import { SocketContext } from '../context/socket';
 import { nameAtom } from '../store/name';
 
 const Home = () => {
+    const socket = useContext(SocketContext);
+
     const navigate = useNavigate();
     const [name, setName] = useAtom(nameAtom);
     const [gameId, setGameId] = useState();
