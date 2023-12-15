@@ -19,10 +19,10 @@ const router = createBrowserRouter([
     {
         element: <Layout />,
         children: [
-            {
-                path: '/newGame',
-                element: <NewGame />
-            },
+            // {
+            //     path: '/newGame',
+            //     element: <NewGame />
+            // },
             {
                 path: '/newGame/:id',
                 element: <NewGame />
