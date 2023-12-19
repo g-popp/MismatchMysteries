@@ -3,10 +3,12 @@ import { useContext, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { SocketContext } from '../context/socket';
 import { gameIdAtom } from '../store/game';
+import { nameAtom } from '../store/name';
 
 const Join = () => {
     const socket = useContext(SocketContext);
     const [gameId, setGameId] = useAtom(gameIdAtom);
+    const [name] = useAtom(nameAtom);
 
     const joinLobby = e => {
         e.preventDefault();
@@ -14,15 +16,13 @@ const Join = () => {
         if (!gameId) return console.log('false');
 
         gameId && socket && socket.emit('checkRoom', gameId);
-
-        // navigate('/join');
     };
 
     useEffect(() => {
         socket &&
             socket.on('roomExists', exists => {
                 if (exists) {
-                    console.log('Room exists');
+                    socket.emit('joinLobby', { roomId: gameId, name: name });
                 } else {
                     console.log('Room does not exist');
                 }
