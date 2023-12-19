@@ -1,8 +1,9 @@
 import { useAtom } from 'jotai';
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '../components/Button';
 import { SocketContext } from '../context/socket';
+import { gameIdAtom } from '../store/game';
 import { nameAtom } from '../store/name';
 
 const Home = () => {
@@ -10,16 +11,18 @@ const Home = () => {
 
     const navigate = useNavigate();
     const [name, setName] = useAtom(nameAtom);
-    const [gameId, setGameId] = useState();
+    const [gameId, setGameId] = useAtom(gameIdAtom);
+
+    const createLobby = () => {
+        socket && socket.emit('createLobby');
+    };
 
     const handleNewGame = e => {
         e.preventDefault();
 
         if (!name) return console.log('Name is missing');
 
-        socket.emit('createLobby');
-
-        // navigate(`/newGame/${gameId}`);
+        createLobby();
     };
 
     const handleJoinLobby = e => {
@@ -31,19 +34,12 @@ const Home = () => {
     };
 
     useEffect(() => {
-        socket.connect();
-
-        return () => socket.disconnect();
-    }, []);
-
-    useEffect(() => {
-        socket.on('lobbyCreated', id => {
-            setGameId(id);
-            navigate(`/newGame/${id}`);
-        });
-
-        return () => socket.disconnect();
-    }, [gameId, navigate]);
+        socket &&
+            socket.on('lobbyCreated', roomId => {
+                setGameId(roomId);
+                navigate(`/newGame/${roomId}`);
+            });
+    }, [socket]);
 
     return (
         <div className='flex flex-col p-8 items-center gap-8'>
