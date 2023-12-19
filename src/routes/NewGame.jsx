@@ -1,31 +1,19 @@
 import { useAtom } from 'jotai';
-import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import ShortUniqueId from 'short-unique-id';
+import { Link } from 'react-router-dom';
 import clipboard from '../assets/clipboard.png';
 import PlayerCard from '../components/PlayerCard';
 import { nameAtom } from '../store/name';
 import { playersAtom } from '../store/players';
 
-const { randomUUID } = new ShortUniqueId({ length: 8 });
-
 const NewGame = () => {
-    const navigate = useNavigate();
-
-    const [gameId] = useState(randomUUID());
-
     const [name] = useAtom(nameAtom);
     const [players] = useAtom(playersAtom);
-
-    useEffect(() => {
-        navigate(`/newGame/${gameId}`, { replace: true });
-    }, []);
 
     return (
         <div className='flex flex-col gap-20 items-center'>
             <h1 className='text-3xl underline'>Game Lobby</h1>
             <div className='flex flex-row gap-6 items-center'>
-                <h2 className='text-4xl'>ID: {gameId}</h2>
+                <h2 className='text-4xl'>ID: {'gameId'}</h2>
                 <div className='border border-black opacity-50 p-2 rounded-lg shadow-md hover:cursor-pointer'>
                     <img
                         src={clipboard}
