@@ -1,11 +1,13 @@
 import { useAtom } from 'jotai';
 import { useContext, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { SocketContext } from '../context/socket';
 import { gameIdAtom } from '../store/game';
 import { nameAtom } from '../store/name';
 
 const Join = () => {
+    const navigate = useNavigate();
+
     const socket = useContext(SocketContext);
     const [gameId, setGameId] = useAtom(gameIdAtom);
     const [name] = useAtom(nameAtom);
@@ -23,6 +25,8 @@ const Join = () => {
             socket.on('roomExists', exists => {
                 if (exists) {
                     socket.emit('joinLobby', { roomId: gameId, name: name });
+
+                    navigate(`/newGame/${gameId}`);
                 } else {
                     console.log('Room does not exist');
                 }
