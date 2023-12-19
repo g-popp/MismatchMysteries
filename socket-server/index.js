@@ -28,9 +28,7 @@ io.on('connection', socket => {
     socket.on('checkRoom', roomId => {
         if (rooms[roomId]) {
             socket.emit('roomExists', true);
-            console.log("emitted 'roomExists'", true);
         } else {
-            console.log("emitted 'roomExists'", false);
             socket.emit('roomExists', false);
         }
     });
