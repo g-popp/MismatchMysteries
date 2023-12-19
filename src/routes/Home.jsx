@@ -65,10 +65,10 @@ const Home = () => {
                 </div>
             </div>
             <div className='flex flex-col gap-14'>
-                <Button color={'#FFFD82'} handler={e => handleNewGame(e)}>
+                <Button color='1B998B' handler={e => handleNewGame(e)}>
                     Start New Game
                 </Button>
-                <Button color={'#E84855'} handler={e => handleJoinLobby(e)}>
+                <Button color='E84855' handler={e => handleJoinLobby(e)}>
                     Join Lobby
                 </Button>
             </div>
