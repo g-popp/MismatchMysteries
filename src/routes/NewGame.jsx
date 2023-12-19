@@ -16,7 +16,17 @@ const NewGame = () => {
     const [players] = useAtom(playersAtom);
 
     useEffect(() => {
-        gameId && socket && socket.emit('checkRoom', gameId);
+        if (gameId && socket) {
+            socket.emit('checkRoom', gameId);
+
+            socket.on('roomExists', exists => {
+                if (exists) {
+                    console.log('Room exists');
+                } else {
+                    console.log('Room does not exist');
+                }
+            });
+        }
     }, []);
 
     return (
