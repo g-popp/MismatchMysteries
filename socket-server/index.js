@@ -25,6 +25,16 @@ io.on('connection', socket => {
         socket.emit('lobbyCreated', roomId);
     });
 
+    socket.on('checkRoom', roomId => {
+        if (rooms[roomId]) {
+            socket.emit('roomExists', true);
+            console.log("emitted 'roomExists'", true);
+        } else {
+            console.log("emitted 'roomExists'", false);
+            socket.emit('roomExists', false);
+        }
+    });
+
     socket.on('joinLobby', roomId => {
         if (rooms[roomId]) {
             socket.join(roomId);
