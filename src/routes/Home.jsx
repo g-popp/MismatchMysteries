@@ -28,7 +28,7 @@ const Home = () => {
     const handleJoinLobby = e => {
         e.preventDefault();
 
-        if (!name || !gameId) return console.log('false');
+        if (!name) return console.log('false');
 
         navigate('/join');
     };
