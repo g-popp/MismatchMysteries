@@ -33,11 +33,11 @@ io.on('connection', socket => {
         }
     });
 
-    socket.on('joinLobby', roomId => {
+    socket.on('joinLobby', ({ roomId, name }) => {
         if (rooms[roomId]) {
             socket.join(roomId);
-            rooms[roomId][socket.id] = {};
-            io.to(roomId).emit('updateLobby', Object.keys(rooms[roomId]));
+            rooms[roomId][socket.id] = { id: socket.id, name: name };
+            io.to(roomId).emit('updateLobby', Object.values(rooms[roomId]));
         } else {
             socket.emit('error', 'Room does not exist');
         }
