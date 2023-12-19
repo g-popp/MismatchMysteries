@@ -23,7 +23,7 @@ const NewGame = () => {
             });
 
             socket.on('updateLobby', players => {
-                console.log(players);
+                setPlayers(players);
             });
         }
     }, []);
@@ -44,12 +44,11 @@ const NewGame = () => {
             <div className='border rounded-lg'>
                 <h2 className='text-2xl p-4'>Players:</h2>
                 <ul className='flex flex-col gap-2 w-64 h-32  items-center m-2 overflow-y-scroll'>
-                    <PlayerCard name={name} backgroundColor='#FFFD82' />
                     {players.map(player => (
                         <PlayerCard
                             key={player.id}
                             name={player.name}
-                            backgroundColor={player.backgroundColor}
+                            backgroundColor='#FF9B71'
                         />
                     ))}
                 </ul>
