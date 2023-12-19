@@ -1,30 +1,29 @@
 import { useAtom } from 'jotai';
-import { useContext, useEffect } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import clipboard from '../assets/clipboard.png';
 import PlayerCard from '../components/PlayerCard';
 import { SocketContext } from '../context/socket';
 import { gameIdAtom } from '../store/game';
 import { nameAtom } from '../store/name';
-import { playersAtom } from '../store/players';
 
 const NewGame = () => {
     const socket = useContext(SocketContext);
 
     const [name] = useAtom(nameAtom);
     const [gameId] = useAtom(gameIdAtom);
-    const [players] = useAtom(playersAtom);
+    const [players, setPlayers] = useState([]);
 
     useEffect(() => {
         if (gameId && socket) {
-            socket.emit('checkRoom', gameId);
+            socket.emit('joinLobby', { roomId: gameId, name: name });
 
-            socket.on('roomExists', exists => {
-                if (exists) {
-                    console.log('Room exists');
-                } else {
-                    console.log('Room does not exist');
-                }
+            socket.on('error', error => {
+                console.log(error);
+            });
+
+            socket.on('updateLobby', players => {
+                console.log(players);
             });
         }
     }, []);
