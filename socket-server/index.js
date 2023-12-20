@@ -7,7 +7,7 @@ const app = express();
 const server = createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: 'http://localhost:5173'
+        origin: ['http://localhost:5173', 'http://localhost:4173']
     }
 });
 
@@ -36,19 +36,46 @@ io.on('connection', socket => {
     socket.on('joinLobby', ({ roomId, name }) => {
         if (rooms[roomId]) {
             socket.join(roomId);
-            rooms[roomId][socket.id] = { id: socket.id, name: name };
+
+            // Check if this is the first player in the lobby
+            const isFirstPlayer = Object.keys(rooms[roomId]).length === 0;
+
+            rooms[roomId][socket.id] = {
+                id: socket.id,
+                name: name,
+                host: isFirstPlayer // The first player becomes the host
+            };
+
+            // Emit updated lobby information to all players in the room
             io.to(roomId).emit('updateLobby', Object.values(rooms[roomId]));
+            console.log(rooms[roomId]);
         } else {
             socket.emit('error', 'Room does not exist');
         }
     });
 
     socket.on('disconnect', () => {
-        // Remove the user from the room and update other members
         Object.keys(rooms).forEach(roomId => {
             if (rooms[roomId][socket.id]) {
+                // Check if the disconnecting player is the host
+                const isHost = rooms[roomId][socket.id].host;
+
                 delete rooms[roomId][socket.id];
-                io.to(roomId).emit('updateLobby', Object.keys(rooms[roomId]));
+
+                // Check if there are any players left in the room
+                if (Object.keys(rooms[roomId]).length === 0) {
+                    // If no players left, delete the room
+                    delete rooms[roomId];
+                } else if (isHost) {
+                    // If the host left and there are still players, assign the host role to the next player
+                    const nextPlayerId = Object.keys(rooms[roomId])[0];
+                    rooms[roomId][nextPlayerId].host = true;
+                    // Emit updated lobby information to all players in the room
+                    io.to(roomId).emit(
+                        'updateLobby',
+                        Object.values(rooms[roomId])
+                    );
+                }
             }
         });
         console.log('Client disconnected', socket.id);
