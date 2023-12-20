@@ -2,6 +2,7 @@ import { useAtom } from 'jotai';
 import { useContext, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import clipboard from '../assets/clipboard.png';
+import Button from '../components/Button';
 import PlayerCard from '../components/PlayerCard';
 import { SocketContext } from '../context/socket';
 import { gameIdAtom } from '../store/game';
@@ -53,12 +54,17 @@ const NewGame = () => {
                     ))}
                 </ul>
             </div>
-            <Link
-                to='/game'
-                className='bg-[#1B998B] text-black text-xl py-4 px-6 border border-black rounded shadow-sm shadow-black'
-            >
-                Start Game
-            </Link>
+            <div className='flex flex-col gap-6'>
+                <Link
+                    to='/game'
+                    className='bg-[#1B998B] text-black text-xl py-4 px-6 border border-black rounded shadow-sm shadow-black'
+                >
+                    Start Game
+                </Link>
+                <Button color='E84855' handler={() => {}}>
+                    Leave
+                </Button>
+            </div>
         </div>
     );
 };
