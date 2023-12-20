@@ -78,10 +78,10 @@ const Home = () => {
                 </div>
             </div>
             <div className='flex flex-col gap-14'>
-                <Button color='1B998B' handler={e => handleNewGame(e)}>
+                <Button color='bg-[#1B998B]' handler={e => handleNewGame(e)}>
                     Start New Game
                 </Button>
-                <Button color='E84855' handler={e => handleJoinLobby(e)}>
+                <Button color='bg-[#E84855]' handler={e => handleJoinLobby(e)}>
                     Join Lobby
                 </Button>
             </div>

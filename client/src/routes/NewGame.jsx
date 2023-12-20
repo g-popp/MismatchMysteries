@@ -70,12 +70,14 @@ const NewGame = () => {
                 </ul>
             </div>
             <div className='flex flex-col gap-6'>
-                <Link
-                    to='/game'
-                    className='bg-[#1B998B] text-black text-xl py-4 px-6 border border-black rounded shadow-sm shadow-black'
+                <Button
+                    handler={startGame}
+                    color='bg-[#1B998B]'
+                    className='text-black text-xl py-4 px-6 border border-black rounded shadow-sm shadow-black'
                 >
                     Start Game
-                </Link>
+                </Button>
+                <Button color='bg-[#E84855]' handler={leaveLobby}>
                 <Button color='E84855' handler={leaveLobby}>
                     Leave
                 </Button>
