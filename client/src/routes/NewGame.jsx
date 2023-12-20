@@ -1,6 +1,6 @@
 import { useAtom } from 'jotai';
 import { useContext, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import clipboard from '../assets/clipboard.png';
 import Button from '../components/Button';
 import PlayerCard from '../components/PlayerCard';
@@ -10,9 +10,10 @@ import { nameAtom } from '../store/name';
 
 const NewGame = () => {
     const socket = useContext(SocketContext);
+    const navigate = useNavigate();
 
     const [name] = useAtom(nameAtom);
-    const [gameId] = useAtom(gameIdAtom);
+    const [gameId, setGameId] = useAtom(gameIdAtom);
     const [players, setPlayers] = useState([]);
 
     useEffect(() => {
@@ -26,8 +27,21 @@ const NewGame = () => {
             socket.on('updateLobby', players => {
                 setPlayers(players);
             });
+
+            socket.on('disconnect', () => {
+                socket.on('updateLobby', players => {
+                    setPlayers(players);
+                });
+            });
         }
     }, [gameId, name, socket]);
+
+    const leaveLobby = () => {
+        socket && socket.emit('leaveLobby', { roomId: gameId });
+
+        setGameId('');
+        navigate('/');
+    };
 
     return (
         <div className='flex flex-col gap-20 items-center'>
@@ -62,7 +76,7 @@ const NewGame = () => {
                 >
                     Start Game
                 </Link>
-                <Button color='E84855' handler={() => {}}>
+                <Button color='E84855' handler={leaveLobby}>
                     Leave
                 </Button>
             </div>
