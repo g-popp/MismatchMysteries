@@ -46,11 +46,12 @@ const Home = () => {
     };
 
     useEffect(() => {
-        socket &&
+        if (socket) {
             socket.on('lobbyCreated', roomId => {
                 setGameId(roomId);
                 navigate(`/newGame/${roomId}`);
             });
+        }
     }, [socket]);
 
     return (
