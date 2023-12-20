@@ -49,6 +49,7 @@ const NewGame = () => {
                         <PlayerCard
                             key={player.id}
                             name={player.name}
+                            host={player.host}
                             backgroundColor='#FF9B71'
                         />
                     ))}
