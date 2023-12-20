@@ -1,7 +1,8 @@
 import { useAtom } from 'jotai';
-import { useContext, useEffect } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '../components/Button';
+import Toast from '../components/Toast';
 import { SocketContext } from '../context/socket';
 import { gameIdAtom } from '../store/game';
 import { nameAtom } from '../store/name';
@@ -11,16 +12,25 @@ const Home = () => {
 
     const navigate = useNavigate();
     const [name, setName] = useAtom(nameAtom);
-    const [gameId, setGameId] = useAtom(gameIdAtom);
+    const [, setGameId] = useAtom(gameIdAtom);
+    const [showToast, setShowToast] = useState(false);
+    const [toastMessage, setToastMessage] = useState('');
 
     const createLobby = () => {
         socket && socket.emit('createLobby');
     };
 
+    const setToastError = () => {
+        setToastMessage('Name is missing');
+        setShowToast(true);
+    };
+
     const handleNewGame = e => {
         e.preventDefault();
 
-        if (!name) return console.log('Name is missing');
+        if (!name) {
+            return setToastError();
+        }
 
         createLobby();
     };
@@ -28,7 +38,9 @@ const Home = () => {
     const handleJoinLobby = e => {
         e.preventDefault();
 
-        if (!name) return console.log('false');
+        if (!name) {
+            return setToastError();
+        }
 
         navigate('/join');
     };
@@ -72,6 +84,12 @@ const Home = () => {
                     Join Lobby
                 </Button>
             </div>
+            <Toast
+                message={toastMessage}
+                type='error'
+                show={showToast}
+                onClose={() => setShowToast(false)}
+            />
         </div>
     );
 };
