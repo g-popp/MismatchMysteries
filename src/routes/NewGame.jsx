@@ -27,7 +27,7 @@ const NewGame = () => {
                 setPlayers(players);
             });
         }
-    }, []);
+    }, [gameId, name, socket]);
 
     return (
         <div className='flex flex-col gap-20 items-center'>
