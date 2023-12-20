@@ -21,7 +21,7 @@ io.on('connection', socket => {
     socket.on('createLobby', () => {
         let roomId = randomUUID();
         rooms[roomId] = {};
-        socket.join(roomId);
+        // socket.join(roomId);
         socket.emit('lobbyCreated', roomId);
     });
 
@@ -35,16 +35,20 @@ io.on('connection', socket => {
 
     socket.on('joinLobby', ({ roomId, name }) => {
         if (rooms[roomId]) {
-            socket.join(roomId);
-
-            // Check if this is the first player in the lobby
+            // Determine if this is the first player in the lobby
             const isFirstPlayer = Object.keys(rooms[roomId]).length === 0;
 
+            console.log(isFirstPlayer);
+
+            // Add the player to the room
             rooms[roomId][socket.id] = {
                 id: socket.id,
                 name: name,
                 host: isFirstPlayer // The first player becomes the host
             };
+
+            // Join the room
+            socket.join(roomId);
 
             // Emit updated lobby information to all players in the room
             io.to(roomId).emit('updateLobby', Object.values(rooms[roomId]));
@@ -54,27 +58,34 @@ io.on('connection', socket => {
         }
     });
 
+    socket.on('leaveLobby', ({ roomId }) => {
+        if (rooms[roomId]) {
+            socket.leave(roomId);
+            delete rooms[roomId][socket.id];
+            io.to(roomId).emit('updateLobby', Object.values(rooms[roomId]));
+        }
+    });
+
     socket.on('disconnect', () => {
         Object.keys(rooms).forEach(roomId => {
             if (rooms[roomId][socket.id]) {
-                // Check if the disconnecting player is the host
                 const isHost = rooms[roomId][socket.id].host;
-
                 delete rooms[roomId][socket.id];
 
-                // Check if there are any players left in the room
                 if (Object.keys(rooms[roomId]).length === 0) {
-                    // If no players left, delete the room
                     delete rooms[roomId];
-                } else if (isHost) {
-                    // If the host left and there are still players, assign the host role to the next player
-                    const nextPlayerId = Object.keys(rooms[roomId])[0];
-                    rooms[roomId][nextPlayerId].host = true;
-                    // Emit updated lobby information to all players in the room
-                    io.to(roomId).emit(
-                        'updateLobby',
-                        Object.values(rooms[roomId])
-                    );
+                } else {
+                    if (isHost) {
+                        const nextPlayerId = Object.keys(rooms[roomId])[0];
+                        rooms[roomId][nextPlayerId].host = true;
+                    }
+                    // Ensure the room still exists before emitting the event
+                    if (rooms[roomId]) {
+                        io.to(roomId).emit(
+                            'updateLobby',
+                            Object.values(rooms[roomId])
+                        );
+                    }
                 }
             }
         });
