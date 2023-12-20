@@ -4,7 +4,7 @@ import { io } from 'socket.io-client';
 const URL =
     import.meta.env.VITE_NODE_ENV === 'production'
         ? undefined
-        : 'http://localhost:4000';
+        : 'https://http-nodejs-production-62ed.up.railway.app/';
 
 export const SocketContext = createContext();
 
