@@ -1,11 +1,11 @@
-const PlayerCard = ({ name, backgroundColor }) => {
+const PlayerCard = ({ name, backgroundColor, host }) => {
     return (
         <div
             className=' flex justify-between w-full p-2 border border-black rounded-md text-black shadow-md text-xl'
             style={{ backgroundColor: backgroundColor }}
         >
             <span>{name}</span>
-            <span>x</span>
+            <span className='text-white'>{host ? 'Game Host' : ''}</span>
         </div>
     );
 };
