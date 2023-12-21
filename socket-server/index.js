@@ -66,6 +66,12 @@ io.on('connection', socket => {
         }
     });
 
+    socket.on('startGame', ({ roomId }) => {
+        if (rooms[roomId]) {
+            io.to(roomId).emit('gameStarted');
+        }
+    });
+
     socket.on('disconnect', () => {
         Object.keys(rooms).forEach(roomId => {
             if (rooms[roomId][socket.id]) {
@@ -96,3 +102,27 @@ io.on('connection', socket => {
 server.listen(4000, () => {
     console.log('server running at http://localhost:4000');
 });
+
+const sendQuestions = roomId => {
+    const normalQuestions =
+        'Wer würde am ehesten einen Tag ohne Smartphone überleben?';
+
+    const imposterQuestion =
+        'Wer ist am wahrscheinlichsten ein geheimes Doppelleben zu führen?';
+
+    const imposterIndex = Math.floor(Math.random() * rooms[roomId].length);
+
+    let playerIndex = 0;
+    io.in(roomId).clients((error, clients) => {
+        if (error) throw error;
+
+        clients.forEach(clientId => {
+            const question =
+                playerIndey === imposterIndex
+                    ? imposterQuestion
+                    : normalQuestions;
+            io.to(clientId).emit('question', question);
+            playerIndex++;
+        });
+    });
+};

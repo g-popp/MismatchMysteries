@@ -1,6 +1,6 @@
 import { useAtom } from 'jotai';
 import { useContext, useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import clipboard from '../assets/clipboard.png';
 import Button from '../components/Button';
 import PlayerCard from '../components/PlayerCard';
@@ -28,19 +28,29 @@ const NewGame = () => {
                 setPlayers(players);
             });
 
+            socket.on('gameStarted', () => {
+                console.log('Game started');
+                navigate(`/game/`);
+            });
+
             socket.on('disconnect', () => {
                 socket.on('updateLobby', players => {
                     setPlayers(players);
                 });
             });
         }
-    }, [gameId, name, socket]);
+    }, [gameId, name, navigate, socket]);
 
     const leaveLobby = () => {
         socket && socket.emit('leaveLobby', { roomId: gameId });
 
         setGameId('');
         navigate('/');
+    };
+
+    const startGame = () => {
+        socket && socket.emit('startGame', { roomId: gameId });
+        console.log('Starting game');
     };
 
     return (
@@ -78,7 +88,6 @@ const NewGame = () => {
                     Start Game
                 </Button>
                 <Button color='bg-[#E84855]' handler={leaveLobby}>
-                <Button color='E84855' handler={leaveLobby}>
                     Leave
                 </Button>
             </div>
