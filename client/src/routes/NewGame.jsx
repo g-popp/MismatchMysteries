@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import clipboard from '../assets/clipboard.png';
 import Button from '../components/Button';
 import PlayerCard from '../components/PlayerCard';
+import Toast from '../components/Toast';
 import { SocketContext } from '../context/socket';
 import { gameIdAtom } from '../store/game';
 import { nameAtom } from '../store/name';
@@ -15,6 +16,8 @@ const NewGame = () => {
     const [name] = useAtom(nameAtom);
     const [gameId, setGameId] = useAtom(gameIdAtom);
     const [players, setPlayers] = useState([]);
+    const [playerObject, setPlayerObject] = useState({});
+    const [showToast, setShowToast] = useState(false);
 
     useEffect(() => {
         if (gameId && socket) {
@@ -26,10 +29,17 @@ const NewGame = () => {
 
             socket.on('updateLobby', players => {
                 setPlayers(players);
+
+                socket.on('playerInfo', player => {
+                    setPlayerObject(player);
+                });
+            });
+
+            socket.on('playerInfo', player => {
+                setPlayerObject(player);
             });
 
             socket.on('gameStarted', () => {
-                console.log('Game started');
                 navigate(`/game/`);
             });
 
@@ -49,8 +59,12 @@ const NewGame = () => {
     };
 
     const startGame = () => {
+        if (players.length < 2) {
+            setShowToast(true);
+            return;
+        }
+
         socket && socket.emit('startGame', { roomId: gameId });
-        console.log('Starting game');
     };
 
     return (
@@ -80,17 +94,26 @@ const NewGame = () => {
                 </ul>
             </div>
             <div className='flex flex-col gap-6'>
-                <Button
-                    handler={startGame}
-                    color='bg-[#1B998B]'
-                    className='text-black text-xl py-4 px-6 border border-black rounded shadow-sm shadow-black'
-                >
-                    Start Game
-                </Button>
+                {playerObject.host ?? (
+                    <Button
+                        handler={startGame}
+                        color='bg-[#1B998B]'
+                        className='text-black text-xl py-4 px-6 border border-black rounded shadow-sm shadow-black'
+                    >
+                        Start Game
+                    </Button>
+                )}
+
                 <Button color='bg-[#E84855]' handler={leaveLobby}>
                     Leave
                 </Button>
             </div>
+            <Toast
+                message={'You need at least 3 Players'}
+                type={'error'}
+                show={showToast}
+                onClose={() => setShowToast(false)}
+            />
         </div>
     );
 };
