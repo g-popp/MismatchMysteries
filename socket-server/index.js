@@ -38,21 +38,24 @@ io.on('connection', socket => {
             // Determine if this is the first player in the lobby
             const isFirstPlayer = Object.keys(rooms[roomId]).length === 0;
 
-            console.log(isFirstPlayer);
-
-            // Add the player to the room
-            rooms[roomId][socket.id] = {
+            // Create the player object
+            const playerObject = {
                 id: socket.id,
                 name: name,
                 host: isFirstPlayer // The first player becomes the host
             };
 
+            // Add the player to the room
+            rooms[roomId][socket.id] = playerObject;
+
             // Join the room
             socket.join(roomId);
 
+            // Emit the player's own object back to them
+            socket.emit('playerInfo', playerObject);
+
             // Emit updated lobby information to all players in the room
             io.to(roomId).emit('updateLobby', Object.values(rooms[roomId]));
-            console.log(rooms[roomId]);
         } else {
             socket.emit('error', 'Room does not exist');
         }
@@ -69,6 +72,8 @@ io.on('connection', socket => {
     socket.on('startGame', ({ roomId }) => {
         if (rooms[roomId]) {
             io.to(roomId).emit('gameStarted');
+
+            sendQuestions(roomId);
         }
     });
 
@@ -110,19 +115,40 @@ const sendQuestions = roomId => {
     const imposterQuestion =
         'Wer ist am wahrscheinlichsten ein geheimes Doppelleben zu führen?';
 
-    const imposterIndex = Math.floor(Math.random() * rooms[roomId].length);
+    const imposterIndex = Math.floor(
+        Math.random() * Object.keys(rooms[roomId]).length
+    );
 
     let playerIndex = 0;
-    io.in(roomId).clients((error, clients) => {
-        if (error) throw error;
 
-        clients.forEach(clientId => {
-            const question =
-                playerIndey === imposterIndex
-                    ? imposterQuestion
-                    : normalQuestions;
-            io.to(clientId).emit('question', question);
-            playerIndex++;
+    io.in(roomId)
+        .fetchSockets()
+        .then(sockets => {
+            console.log('PlayerIndex: ', playerIndex);
+            console.log('imposterIndex: ', imposterIndex);
+            sockets.forEach(socket => {
+                const question =
+                    playerIndex === imposterIndex
+                        ? imposterQuestion
+                        : normalQuestions;
+                socket.emit('question', question);
+                playerIndex++;
+            });
+        })
+        .catch(err => {
+            console.log(err);
         });
-    });
+
+    // io.in(roomId).clients((error, clients) => {
+    //     if (error) throw error;
+
+    //     clients.forEach(clientId => {
+    //         const question =
+    //             playerIndex === imposterIndex
+    //                 ? imposterQuestion
+    //                 : normalQuestions;
+    //         io.to(clientId).emit('question', question);
+    //         playerIndex++;
+    //     });
+    // });
 };

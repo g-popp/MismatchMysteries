@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import Button from '../components/Button';
 import Toast from '../components/Toast';
 import { SocketContext } from '../context/socket';
-import { gameIdAtom } from '../store/game';
+import { gameIdAtom, isGameRunningAtom } from '../store/game';
 import { nameAtom } from '../store/name';
 
 const Home = () => {
@@ -12,9 +12,10 @@ const Home = () => {
 
     const navigate = useNavigate();
     const [name, setName] = useAtom(nameAtom);
-    const [, setGameId] = useAtom(gameIdAtom);
+    const [gameId, setGameId] = useAtom(gameIdAtom);
     const [showToast, setShowToast] = useState(false);
     const [toastMessage, setToastMessage] = useState('');
+    const [isGameRunning, setIsGameRunning] = useAtom(isGameRunningAtom);
 
     const createLobby = () => {
         socket && socket.emit('createLobby');
@@ -45,6 +46,27 @@ const Home = () => {
         navigate('/join');
     };
 
+    const resumeGame = e => {
+        e.preventDefault();
+
+        if (!name) {
+            return setToastError();
+        }
+
+        navigate(`/newGame/${gameId}`);
+    };
+
+    const leaveGame = e => {
+        e.preventDefault();
+
+        socket.emit('leaveLobby', { roomId: gameId });
+        console.log('Leave');
+
+        setGameId('');
+        setIsGameRunning(false);
+        navigate('/');
+    };
+
     useEffect(() => {
         if (socket) {
             socket.on('lobbyCreated', roomId => {
@@ -52,7 +74,13 @@ const Home = () => {
                 navigate(`/newGame/${roomId}`);
             });
         }
-    }, [socket]);
+    }, [navigate, setGameId, socket]);
+
+    useEffect(() => {
+        if (gameId) {
+            setIsGameRunning(true);
+        }
+    }, [gameId, setIsGameRunning]);
 
     return (
         <div className='flex flex-col p-8 items-center gap-8'>
@@ -78,12 +106,37 @@ const Home = () => {
                 </div>
             </div>
             <div className='flex flex-col gap-14'>
-                <Button color='bg-[#1B998B]' handler={e => handleNewGame(e)}>
-                    Start New Game
-                </Button>
-                <Button color='bg-[#E84855]' handler={e => handleJoinLobby(e)}>
-                    Join Lobby
-                </Button>
+                {!isGameRunning ? (
+                    <>
+                        <Button
+                            color='bg-[#1B998B]'
+                            handler={e => handleNewGame(e)}
+                        >
+                            Start New Game
+                        </Button>
+                        <Button
+                            color='bg-[#E84855]'
+                            handler={e => handleJoinLobby(e)}
+                        >
+                            Join Lobby
+                        </Button>
+                    </>
+                ) : (
+                    <>
+                        <Button
+                            color='bg-[#1B998B]'
+                            handler={e => resumeGame(e)}
+                        >
+                            Resume Game
+                        </Button>
+                        <Button
+                            color='bg-[#E84855]'
+                            handler={e => leaveGame(e)}
+                        >
+                            Leave
+                        </Button>
+                    </>
+                )}
             </div>
             <Toast
                 message={toastMessage}
