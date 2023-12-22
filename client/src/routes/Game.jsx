@@ -6,6 +6,7 @@ import { SocketContext } from '../context/socket';
 const Game = () => {
     const socket = useContext(SocketContext);
     const [question, setQuestion] = useState('');
+    const [players, setPlayers] = useState([]);
 
     const [counter, setCounter] = useState(5);
 
@@ -18,6 +19,11 @@ const Game = () => {
 
     useEffect(() => {
         if (socket) {
+            socket.on('updateLobby', players => {
+                players = players.filter(player => player.id !== socket.id);
+                setPlayers(players);
+            });
+
             socket.on('question', question => {
                 console.log(question);
                 setQuestion(question);
@@ -33,7 +39,7 @@ const Game = () => {
             ) : (
                 <>
                     <QuestionCard question={question} />
-                    <ChoosePlayer />
+                    <ChoosePlayer players={players} />
                 </>
             )}
         </div>
