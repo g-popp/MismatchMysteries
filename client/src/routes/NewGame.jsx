@@ -29,10 +29,6 @@ const NewGame = () => {
 
             socket.on('updateLobby', players => {
                 setPlayers(players);
-
-                socket.on('playerInfo', player => {
-                    setPlayerObject(player);
-                });
             });
 
             socket.on('playerInfo', player => {
@@ -59,7 +55,7 @@ const NewGame = () => {
     };
 
     const startGame = () => {
-        if (players.length < 2) {
+        if (players.length < 3) {
             setShowToast(true);
             return;
         }
@@ -94,7 +90,7 @@ const NewGame = () => {
                 </ul>
             </div>
             <div className='flex flex-col gap-6'>
-                {playerObject.host ?? (
+                {playerObject.host && (
                     <Button
                         handler={startGame}
                         color='bg-[#1B998B]'

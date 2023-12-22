@@ -124,14 +124,12 @@ const sendQuestions = roomId => {
     io.in(roomId)
         .fetchSockets()
         .then(sockets => {
-            console.log('PlayerIndex: ', playerIndex);
-            console.log('imposterIndex: ', imposterIndex);
             sockets.forEach(socket => {
                 const question =
                     playerIndex === imposterIndex
                         ? imposterQuestion
                         : normalQuestions;
-                socket.emit('question', question);
+                socket.to(socket.id).emit('question', question);
                 playerIndex++;
             });
         })

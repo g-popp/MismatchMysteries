@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-const QuestionCard = () => {
+const QuestionCard = ({ question }) => {
     const headingColors = [
         'bg-[#FF9B71]',
         'bg-[#1B998B]',
@@ -14,9 +14,7 @@ const QuestionCard = () => {
         <div
             className={`w-full border border-black px-12 py-24 ${color} rounded-lg shadow-xl`}
         >
-            <h2 className='text-2xl text-center text-black'>
-                Which player is most likely to drive drunk?
-            </h2>
+            <h2 className='text-2xl text-center text-black'>{question}</h2>
         </div>
     );
 };
