@@ -10,6 +10,7 @@ const QuestionCard = ({ question }) => {
     const randomColor =
         headingColors[Math.floor(Math.random() * headingColors.length)];
     const [color] = useState(randomColor);
+
     return (
         <div
             className={`w-full border border-black px-12 py-24 ${color} rounded-lg shadow-xl`}
