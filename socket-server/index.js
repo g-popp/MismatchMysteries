@@ -73,6 +73,8 @@ io.on('connection', socket => {
         if (rooms[roomId]) {
             io.to(roomId).emit('gameStarted');
 
+            io.to(roomId).emit('updateLobby', Object.values(rooms[roomId]));
+
             sendQuestions(roomId);
         }
     });
@@ -129,7 +131,7 @@ const sendQuestions = roomId => {
                     playerIndex === imposterIndex
                         ? imposterQuestion
                         : normalQuestions;
-                socket.to(socket.id).emit('question', question);
+                socket.emit('question', question);
                 playerIndex++;
             });
         })
