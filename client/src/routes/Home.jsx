@@ -108,14 +108,11 @@ const Home = () => {
             <div className='flex flex-col gap-14'>
                 {!isGameRunning ? (
                     <>
-                        <Button
-                            color='bg-[#1B998B]'
-                            handler={e => handleNewGame(e)}
-                        >
+                        <Button color='#1B998B' handler={e => handleNewGame(e)}>
                             Start New Game
                         </Button>
                         <Button
-                            color='bg-[#E84855]'
+                            color='#E84855'
                             handler={e => handleJoinLobby(e)}
                         >
                             Join Lobby
@@ -123,16 +120,10 @@ const Home = () => {
                     </>
                 ) : (
                     <>
-                        <Button
-                            color='bg-[#1B998B]'
-                            handler={e => resumeGame(e)}
-                        >
+                        <Button color='#1B998B' handler={e => resumeGame(e)}>
                             Resume Game
                         </Button>
-                        <Button
-                            color='bg-[#E84855]'
-                            handler={e => leaveGame(e)}
-                        >
+                        <Button color='#E84855' handler={e => leaveGame(e)}>
                             Leave
                         </Button>
                     </>

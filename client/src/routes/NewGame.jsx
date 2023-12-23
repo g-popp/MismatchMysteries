@@ -93,14 +93,14 @@ const NewGame = () => {
                 {playerObject.host && (
                     <Button
                         handler={startGame}
-                        color='bg-[#1B998B]'
+                        color='#1B998B'
                         className='text-black text-xl py-4 px-6 border border-black rounded shadow-sm shadow-black'
                     >
                         Start Game
                     </Button>
                 )}
 
-                <Button color='bg-[#E84855]' handler={leaveLobby}>
+                <Button color='#E84855' handler={leaveLobby}>
                     Leave
                 </Button>
             </div>
