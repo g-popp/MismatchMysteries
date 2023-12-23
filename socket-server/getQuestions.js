@@ -2,17 +2,14 @@ import fs from 'fs';
 
 let questions = [];
 
-const getRandomQuestion = () => {
-    try {
-        const getQuestionsFromFile = fs.readFileSync(
-            './questions.json',
-            'utf-8'
-        );
-        questions = JSON.parse(getQuestionsFromFile);
-    } catch (error) {
-        console.log(error);
-    }
+try {
+    const getQuestionsFromFile = fs.readFileSync('./questions.json', 'utf-8');
+    questions = JSON.parse(getQuestionsFromFile);
+} catch (error) {
+    console.log(error);
+}
 
+const getRandomQuestion = () => {
     const randomQuestion =
         questions[Math.floor(Math.random() * questions.length)];
 
