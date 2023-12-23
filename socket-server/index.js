@@ -2,6 +2,7 @@ import express from 'express';
 import { createServer } from 'node:http';
 import ShortUniqueId from 'short-unique-id';
 import { Server } from 'socket.io';
+import getQuestions from './getQuestions.js';
 
 const app = express();
 const server = createServer(app);
@@ -111,11 +112,8 @@ server.listen(4000, () => {
 });
 
 const sendQuestions = roomId => {
-    const normalQuestions =
-        'Wer würde am ehesten einen Tag ohne Smartphone überleben?';
-
-    const imposterQuestion =
-        'Wer ist am wahrscheinlichsten ein geheimes Doppelleben zu führen?';
+    const normalQuestions = getQuestions()[0];
+    const imposterQuestion = getQuestions()[1];
 
     const imposterIndex = Math.floor(
         Math.random() * Object.keys(rooms[roomId]).length
@@ -138,17 +136,4 @@ const sendQuestions = roomId => {
         .catch(err => {
             console.log(err);
         });
-
-    // io.in(roomId).clients((error, clients) => {
-    //     if (error) throw error;
-
-    //     clients.forEach(clientId => {
-    //         const question =
-    //             playerIndex === imposterIndex
-    //                 ? imposterQuestion
-    //                 : normalQuestions;
-    //         io.to(clientId).emit('question', question);
-    //         playerIndex++;
-    //     });
-    // });
 };
