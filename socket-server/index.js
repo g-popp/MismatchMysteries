@@ -6,6 +6,7 @@ import {
     addRoom,
     addUserToRoom,
     getRoom,
+    getUser,
     removeUserFromRoom
 } from './store/rooms.js';
 import getQuestions from './utils/getQuestions.js';
@@ -77,6 +78,18 @@ io.on('connection', socket => {
         setTimeout(() => {
             io.to(roomId).emit('gameEnded');
         }, 10000);
+    });
+
+    socket.on('choosePlayer', ({ playerId }) => {
+        const ownPlayer = getUser(socket.id);
+        const choosenPlayer = getUser(playerId);
+
+        console.log(
+            "Player's choice",
+            ownPlayer?.name,
+            '--->',
+            choosenPlayer?.name
+        );
     });
 
     socket.on('disconnect', () => {

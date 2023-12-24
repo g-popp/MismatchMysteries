@@ -76,4 +76,12 @@ const removeUserFromRoom = id => {
     }
 };
 
-export { addRoom, addUserToRoom, getRoom, removeUserFromRoom };
+const getUser = id => {
+    const room = rooms.find(room => room.users.find(user => user.id === id));
+
+    if (room) {
+        return room.users.find(user => user.id === id);
+    }
+};
+
+export { addRoom, addUserToRoom, getRoom, getUser, removeUserFromRoom };
