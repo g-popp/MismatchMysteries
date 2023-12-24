@@ -19,6 +19,12 @@ const addRoom = ({ id }) => {
 
 const getRoom = id => rooms.find(room => room.id === id);
 
+const getRoomFromUser = id => {
+    const room = rooms.find(room => room.users.find(user => user.id === id));
+
+    return room;
+};
+
 const removeRoom = id => {
     const room = rooms.find(room => room.id === id);
 
@@ -84,4 +90,11 @@ const getUser = id => {
     }
 };
 
-export { addRoom, addUserToRoom, getRoom, getUser, removeUserFromRoom };
+export {
+    addRoom,
+    addUserToRoom,
+    getRoom,
+    getRoomFromUser,
+    getUser,
+    removeUserFromRoom
+};

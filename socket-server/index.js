@@ -2,11 +2,12 @@ import express from 'express';
 import { createServer } from 'node:http';
 import ShortUniqueId from 'short-unique-id';
 import { Server } from 'socket.io';
+import { addPlayerChoice, haveAllPlayersChosen } from './store/game.js';
 import {
     addRoom,
     addUserToRoom,
     getRoom,
-    getUser,
+    getRoomFromUser,
     removeUserFromRoom
 } from './store/rooms.js';
 import getQuestions from './utils/getQuestions.js';
@@ -81,15 +82,21 @@ io.on('connection', socket => {
     });
 
     socket.on('choosePlayer', ({ playerId }) => {
-        const ownPlayer = getUser(socket.id);
-        const choosenPlayer = getUser(playerId);
+        const updatedChoice = addPlayerChoice(socket.id, playerId);
 
-        console.log(
-            "Player's choice",
-            ownPlayer?.name,
-            '--->',
-            choosenPlayer?.name
-        );
+        if (updatedChoice.error) {
+            socket.emit('error', updatedChoice.error);
+            return;
+        }
+
+        const room = getRoomFromUser(socket.id);
+
+        if (!room) return;
+
+        if (haveAllPlayersChosen(room.id)) {
+            io.to(room.id).emit('allPlayersChosen');
+            console.log("All players have chosen, let's go!");
+        }
     });
 
     socket.on('disconnect', () => {
