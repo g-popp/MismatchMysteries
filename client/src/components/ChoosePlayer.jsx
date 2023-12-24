@@ -1,11 +1,16 @@
 /* eslint-disable react/prop-types */
-import { useState } from 'react';
+import { useContext, useState } from 'react';
+import { SocketContext } from '../context/socket';
 
 const ChoosePlayer = ({ players }) => {
+    const socket = useContext(SocketContext);
+
     const [selectedButton, setSelectedButton] = useState(null);
 
     const handleButtonClick = buttonId => {
         setSelectedButton(buttonId);
+
+        socket.emit('choosePlayer', { playerId: buttonId });
     };
 
     return (
