@@ -3,7 +3,10 @@ import fs from 'fs';
 let questions = [];
 
 try {
-    const getQuestionsFromFile = fs.readFileSync('./questions.json', 'utf-8');
+    const getQuestionsFromFile = fs.readFileSync(
+        'utils/questions.json',
+        'utf8'
+    );
     questions = JSON.parse(getQuestionsFromFile);
 } catch (error) {
     console.log(error);

@@ -2,7 +2,13 @@ import express from 'express';
 import { createServer } from 'node:http';
 import ShortUniqueId from 'short-unique-id';
 import { Server } from 'socket.io';
-import getQuestions from './getQuestions.js';
+import {
+    addRoom,
+    addUserToRoom,
+    getRoom,
+    removeUserFromRoom
+} from './store/rooms.js';
+import getQuestions from './utils/getQuestions.js';
 
 const app = express();
 const server = createServer(app);
@@ -20,89 +26,64 @@ io.on('connection', socket => {
     console.log('New client connected', socket.id);
 
     socket.on('createLobby', () => {
-        let roomId = randomUUID();
-        rooms[roomId] = {};
-        // socket.join(roomId);
-        socket.emit('lobbyCreated', roomId);
+        const room = addRoom({ id: randomUUID() });
+        socket.emit('lobbyCreated', room.id);
     });
 
     socket.on('checkRoom', roomId => {
-        if (rooms[roomId]) {
-            socket.emit('roomExists', true);
-        } else {
-            socket.emit('roomExists', false);
-        }
+        const room = getRoom(roomId);
+        const roomExists = room;
+        socket.emit('roomExists', roomExists);
     });
 
     socket.on('joinLobby', ({ roomId, name }) => {
-        if (rooms[roomId]) {
-            // Determine if this is the first player in the lobby
-            const isFirstPlayer = Object.keys(rooms[roomId]).length === 0;
+        const user = addUserToRoom({ roomId, name, id: socket.id });
 
-            // Create the player object
-            const playerObject = {
-                id: socket.id,
-                name: name,
-                host: isFirstPlayer // The first player becomes the host
-            };
-
-            // Add the player to the room
-            rooms[roomId][socket.id] = playerObject;
-
-            // Join the room
-            socket.join(roomId);
-
-            // Emit the player's own object back to them
-            socket.emit('playerInfo', playerObject);
-
-            // Emit updated lobby information to all players in the room
-            io.to(roomId).emit('updateLobby', Object.values(rooms[roomId]));
-        } else {
-            socket.emit('error', 'Room does not exist');
+        if (user.error) {
+            socket.emit('error', user.error);
+            return;
         }
+
+        socket.join(roomId);
+        socket.emit('playerInfo', user.user);
+
+        io.to(roomId).emit('updateLobby', getRoom(roomId).users);
     });
 
     socket.on('leaveLobby', ({ roomId }) => {
-        if (rooms[roomId]) {
-            socket.leave(roomId);
-            delete rooms[roomId][socket.id];
-            io.to(roomId).emit('updateLobby', Object.values(rooms[roomId]));
+        const room = getRoom(roomId);
+
+        const users = room?.users;
+
+        removeUserFromRoom(socket.id);
+
+        if (room && users) {
+            io.to(roomId).emit('updateLobby', users);
         }
+
+        socket.leave(roomId);
     });
 
     socket.on('startGame', ({ roomId }) => {
-        if (rooms[roomId]) {
-            io.to(roomId).emit('gameStarted');
+        let room = getRoom(roomId);
 
-            io.to(roomId).emit('updateLobby', Object.values(rooms[roomId]));
+        if (!room) return;
 
-            sendQuestions(roomId);
-        }
+        io.to(roomId).emit('gameStarted');
+        io.to(roomId).emit('updateLobby', room.users);
+
+        sendQuestions(roomId);
+
+        setTimeout(() => {
+            io.to(roomId).emit('gameEnded');
+        }, 10000);
     });
 
     socket.on('disconnect', () => {
-        Object.keys(rooms).forEach(roomId => {
-            if (rooms[roomId][socket.id]) {
-                const isHost = rooms[roomId][socket.id].host;
-                delete rooms[roomId][socket.id];
+        removeUserFromRoom(socket.id);
 
-                if (Object.keys(rooms[roomId]).length === 0) {
-                    delete rooms[roomId];
-                } else {
-                    if (isHost) {
-                        const nextPlayerId = Object.keys(rooms[roomId])[0];
-                        rooms[roomId][nextPlayerId].host = true;
-                    }
-                    // Ensure the room still exists before emitting the event
-                    if (rooms[roomId]) {
-                        io.to(roomId).emit(
-                            'updateLobby',
-                            Object.values(rooms[roomId])
-                        );
-                    }
-                }
-            }
-        });
+        // TODO: remove room if no users
+
         console.log('Client disconnected', socket.id);
     });
 });
@@ -112,12 +93,14 @@ server.listen(4000, () => {
 });
 
 const sendQuestions = roomId => {
+    const room = getRoom(roomId);
+
+    if (!room) return;
+
     const normalQuestions = getQuestions()[0];
     const imposterQuestion = getQuestions()[1];
 
-    const imposterIndex = Math.floor(
-        Math.random() * Object.keys(rooms[roomId]).length
-    );
+    const imposterIndex = Math.floor(Math.random() * room.users?.length);
 
     let playerIndex = 0;
 
