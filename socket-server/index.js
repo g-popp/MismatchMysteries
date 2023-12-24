@@ -21,6 +21,8 @@ const io = new Server(server, {
 const { randomUUID } = new ShortUniqueId({ length: 8 });
 
 let rooms = {};
+let playerAnswers = {}; // Player <-> erhaltene Frage
+
 
 io.on('connection', socket => {
     console.log('New client connected', socket.id);
@@ -76,8 +78,19 @@ io.on('connection', socket => {
 
         setTimeout(() => {
             io.to(roomId).emit('gameEnded');
+            console.log('playerAnswers')
         }, 10000);
     });
+
+    socket.on('sendAnswers',({roomId, targetPlayer_first}) =>{ // targetPlayer_first für erste Abstimmung ; targetPlayer_second für zweite Abstimmung bei ImposterWahl
+        const room = getRoom(roomId)                       //
+
+       // if (!room || !playerAnswers[socket.id] || !room.users.includes(targetPlayer_first) || socket.id === targetPlayer_first) { // verhindert Selbsttargeting ChatGPT line ich versteh die nicht eventuell brauchen wir die auch nicht wenn frontend keine selbstauswahl zulässt
+       //     return; //
+       // }
+
+        playerAnswers[socket.id].targetPlayer = targetPlayer_first;
+    })
 
     socket.on('disconnect', () => {
         removeUserFromRoom(socket.id);
@@ -91,6 +104,7 @@ io.on('connection', socket => {
 server.listen(4000, () => {
     console.log('server running at http://localhost:4000');
 });
+
 
 const sendQuestions = roomId => {
     const room = getRoom(roomId);
@@ -112,6 +126,10 @@ const sendQuestions = roomId => {
                     playerIndex === imposterIndex
                         ? imposterQuestion
                         : normalQuestions;
+                    playerAnswers[socket.id] = {  //
+                        question: question,       //
+                        targetPlayer: null,       //
+                    }    
                 socket.emit('question', question);
                 playerIndex++;
             });
