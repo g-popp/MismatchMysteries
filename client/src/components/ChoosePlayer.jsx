@@ -25,7 +25,6 @@ const ChoosePlayer = ({ players }) => {
                                 ? ' bg-emerald-500'
                                 : 'bg-zinc-500'
                         }`}
-                        // style={{ backgroundColor: color }}
                         onClick={() => handleButtonClick(player.id)}
                     >
                         {player.name}
