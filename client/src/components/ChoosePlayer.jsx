@@ -1,17 +1,30 @@
 /* eslint-disable react/prop-types */
-import Button from '../components/Button';
-import useRandomColor from '../hooks/useRandomColor';
+import { useState } from 'react';
 
 const ChoosePlayer = ({ players }) => {
-    const [color] = useRandomColor();
+    const [selectedButton, setSelectedButton] = useState(null);
+
+    const handleButtonClick = buttonId => {
+        setSelectedButton(buttonId);
+    };
 
     return (
         <div className=' grid'>
             <div className='grid grid-cols-2 gap-4'>
                 {players.map(player => (
-                    <Button key={player.id} color={color}>
+                    <button
+                        key={player.id}
+                        type='button'
+                        className={`text-black text-center text-xl py-4 px-6 border border-black rounded shadow-sm ${
+                            selectedButton === player.id
+                                ? ' bg-emerald-500'
+                                : 'bg-zinc-500'
+                        }`}
+                        // style={{ backgroundColor: color }}
+                        onClick={() => handleButtonClick(player.id)}
+                    >
                         {player.name}
-                    </Button>
+                    </button>
                 ))}
             </div>
         </div>
