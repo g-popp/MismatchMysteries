@@ -8,6 +8,7 @@ import Toast from '../components/Toast';
 import { SocketContext } from '../context/socket';
 import { gameIdAtom } from '../store/game';
 import { nameAtom } from '../store/name';
+import { playerAtom } from '../store/players';
 
 const NewGame = () => {
     const socket = useContext(SocketContext);
@@ -16,7 +17,7 @@ const NewGame = () => {
     const [name] = useAtom(nameAtom);
     const [gameId, setGameId] = useAtom(gameIdAtom);
     const [players, setPlayers] = useState([]);
-    const [playerObject, setPlayerObject] = useState({});
+    const [ownPlayer, setOwnPlayer] = useAtom(playerAtom);
     const [showToast, setShowToast] = useState(false);
 
     useEffect(() => {
@@ -32,7 +33,7 @@ const NewGame = () => {
             });
 
             socket.on('playerInfo', player => {
-                setPlayerObject(player);
+                setOwnPlayer(player);
             });
 
             socket.on('gameStarted', () => {
@@ -45,7 +46,7 @@ const NewGame = () => {
                 });
             });
         }
-    }, [gameId, name, navigate, socket]);
+    }, [gameId, name, navigate, setOwnPlayer, socket]);
 
     const leaveLobby = () => {
         socket && socket.emit('leaveLobby', { roomId: gameId });
@@ -90,7 +91,7 @@ const NewGame = () => {
                 </ul>
             </div>
             <div className='flex flex-col gap-6'>
-                {playerObject.host && (
+                {ownPlayer.host && (
                     <Button
                         handler={startGame}
                         color='#1B998B'

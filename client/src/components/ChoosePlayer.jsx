@@ -1,17 +1,31 @@
 /* eslint-disable react/prop-types */
-import { useContext, useState } from 'react';
+import { useAtom } from 'jotai';
+import { useContext, useEffect, useState } from 'react';
 import { SocketContext } from '../context/socket';
+import { playerAtom } from '../store/players';
+import Toast from './Toast';
 
 const ChoosePlayer = ({ players }) => {
     const socket = useContext(SocketContext);
 
     const [selectedButton, setSelectedButton] = useState(null);
+    const [ownPlayer] = useAtom(playerAtom);
+    const [showToast, setShowToast] = useState(false);
 
     const handleButtonClick = buttonId => {
         setSelectedButton(buttonId);
 
         socket.emit('choosePlayer', { playerId: buttonId });
     };
+
+    useEffect(() => {
+        if (socket) {
+            socket.on('allPlayersChosen', () => {
+                console.log(ownPlayer);
+                !ownPlayer?.isHost && setShowToast(true);
+            });
+        }
+    }, [ownPlayer, socket]);
 
     return (
         <div className=' grid'>
@@ -31,6 +45,11 @@ const ChoosePlayer = ({ players }) => {
                     </button>
                 ))}
             </div>
+            <Toast
+                message={'All Player selected someone'}
+                show={showToast}
+                onClose={() => setShowToast(false)}
+            />
         </div>
     );
 };
