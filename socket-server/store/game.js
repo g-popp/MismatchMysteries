@@ -33,13 +33,8 @@ const haveAllPlayersChosen = roomId => {
     if (uniqueChoices.length !== playerIds.length) {
         return false;
     } else {
-        clearChoices();
         return true;
     }
-};
-
-const clearChoices = () => {
-    playerChoices.length = 0;
 };
 
 export { addPlayerChoice, haveAllPlayersChosen };
