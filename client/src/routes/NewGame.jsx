@@ -1,3 +1,4 @@
+import { useAutoAnimate } from '@formkit/auto-animate/react';
 import { useAtom } from 'jotai';
 import { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -19,6 +20,8 @@ const NewGame = () => {
     const [players, setPlayers] = useState([]);
     const [ownPlayer, setOwnPlayer] = useAtom(playerAtom);
     const [showToast, setShowToast] = useState(false);
+
+    const [parent] = useAutoAnimate();
 
     useEffect(() => {
         if (gameId && socket) {
@@ -79,7 +82,10 @@ const NewGame = () => {
             </div>
             <div className='border rounded-lg'>
                 <h2 className='text-2xl p-4'>Players:</h2>
-                <ul className='flex flex-col gap-2 w-64 h-32  items-center m-2 overflow-y-scroll'>
+                <ul
+                    className='flex flex-col gap-2 w-64 h-32  items-center m-2 overflow-y-scroll'
+                    ref={parent}
+                >
                     {players.map(player => (
                         <PlayerCard
                             key={player.id}
