@@ -8,6 +8,7 @@ import Layout from './Layout.jsx';
 import { SocketProvider } from './context/socket.jsx';
 import ErrorPage from './error-page.jsx';
 import './index.css';
+import Discussion from './routes/Discussion.jsx';
 import Game from './routes/Game.jsx';
 import Join from './routes/Join.jsx';
 import NewGame from './routes/NewGame.jsx';
@@ -21,10 +22,6 @@ const router = createBrowserRouter([
     {
         element: <Layout />,
         children: [
-            // {
-            //     path: '/newGame',
-            //     element: <NewGame />
-            // },
             {
                 path: '/newGame/:id',
                 element: <NewGame />
@@ -36,6 +33,10 @@ const router = createBrowserRouter([
             {
                 path: '/game',
                 element: <Game />
+            },
+            {
+                path: '/discussion',
+                element: <Discussion />
             }
         ]
     }
