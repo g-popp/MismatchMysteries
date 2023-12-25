@@ -1,6 +1,7 @@
 import { getRoom, getUser } from './rooms.js';
 
 const playerChoices = [];
+const playerBlames = [];
 
 const addPlayerChoice = (playerId, playerChoice) => {
     const ownPlayer = getUser(playerId);
@@ -37,4 +38,42 @@ const haveAllPlayersChosen = roomId => {
     }
 };
 
-export { addPlayerChoice, haveAllPlayersChosen };
+const addPlayerBlame = (playerId, playerChoice) => {
+    const ownPlayer = getUser(playerId);
+    const chosenPlayer = getUser(playerChoice);
+
+    if (ownPlayer && chosenPlayer) {
+        playerBlames.push({ chooser: ownPlayer, chosen: chosenPlayer });
+    } else {
+        return { error: 'Player not found' };
+    }
+
+    return { playerBlames };
+};
+
+const haveAllPlayersBlamed = roomId => {
+    const room = getRoom(roomId);
+    if (!room) return false;
+
+    const players = room.users;
+    if (!players) return false;
+
+    const playerIds = players.map(player => player.id);
+
+    const choices = playerBlames.map(choice => choice.chooser.id);
+
+    const uniqueChoices = [...new Set(choices)];
+
+    if (uniqueChoices.length !== playerIds.length) {
+        return false;
+    } else {
+        return true;
+    }
+};
+
+export {
+    addPlayerBlame,
+    addPlayerChoice,
+    haveAllPlayersBlamed,
+    haveAllPlayersChosen
+};

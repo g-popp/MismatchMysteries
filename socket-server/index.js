@@ -2,7 +2,12 @@ import express from 'express';
 import { createServer } from 'node:http';
 import ShortUniqueId from 'short-unique-id';
 import { Server } from 'socket.io';
-import { addPlayerChoice, haveAllPlayersChosen } from './store/game.js';
+import {
+    addPlayerBlame,
+    addPlayerChoice,
+    haveAllPlayersBlamed,
+    haveAllPlayersChosen
+} from './store/game.js';
 import {
     addRoom,
     addUserToRoom,
@@ -99,6 +104,24 @@ io.on('connection', socket => {
         }
     });
 
+    socket.on('blamePlayer', ({ playerId }) => {
+        const choice = addPlayerBlame(socket.id, playerId);
+
+        if (choice.error) {
+            socket.emit('error', choice.error);
+            return;
+        }
+
+        const room = getRoomFromUser(socket.id);
+
+        if (!room) return;
+
+        if (haveAllPlayersBlamed(room.id)) {
+            io.to(room.id).emit('allPlayersBlamed');
+            console.log("All players have blamed, let's go!");
+        }
+    });
+
     socket.on('startDiscussionPhase', () => {
         const room = getRoomFromUser(socket.id);
 
@@ -113,6 +136,14 @@ io.on('connection', socket => {
         // TODO: remove room if no users
 
         console.log('Client disconnected', socket.id);
+    });
+
+    socket.on('startBlamePhase', () => {
+        const room = getRoomFromUser(socket.id);
+
+        if (!room) return;
+
+        io.to(room.id).emit('blamePhaseStarted');
     });
 });
 
