@@ -57,13 +57,13 @@ io.on('connection', socket => {
 
         const users = room?.users;
 
-        removeUserFromRoom(socket.id);
-
-        if (room && users) {
-            io.to(roomId).emit('updateLobby', users);
-        }
+        const newUserList = removeUserFromRoom(socket.id);
 
         socket.leave(roomId);
+
+        if (!users) return;
+
+        io.to(roomId).emit('updateLobby', newUserList);
     });
 
     socket.on('startGame', ({ roomId }) => {

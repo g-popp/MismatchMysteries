@@ -76,9 +76,13 @@ const removeUserFromRoom = id => {
 
         room.users = room.users.filter(user => user.id !== id);
 
+        console.log(room.users);
+
         if (room.users.length === 0) {
             rooms = rooms.filter(room => room.id !== room.id);
         }
+
+        return room.users;
     }
 };
 
