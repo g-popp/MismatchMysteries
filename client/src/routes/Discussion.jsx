@@ -6,7 +6,7 @@ import { playerAtom } from '../store/players';
 const Discussion = () => {
     const [ownPlayer] = useAtom(playerAtom);
 
-    const [counter, setCounter] = useState(5);)
+    const [counter, setCounter] = useState(5);
 
     useEffect(() => {
         const timer =
