@@ -1,6 +1,7 @@
 /* eslint-disable react/prop-types */
 import { useAtom } from 'jotai';
 import { useContext, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { SocketContext } from '../context/socket';
 import { playerAtom } from '../store/players';
 import Button from './Button';
@@ -8,6 +9,7 @@ import Toast from './Toast';
 
 const ChoosePlayer = ({ players }) => {
     const socket = useContext(SocketContext);
+    const navigate = useNavigate();
 
     const [selectedButton, setSelectedButton] = useState(null);
     const [ownPlayer] = useAtom(playerAtom);
@@ -20,14 +22,22 @@ const ChoosePlayer = ({ players }) => {
         socket.emit('choosePlayer', { playerId: buttonId });
     };
 
+    const startDiscussionPhase = () => {
+        socket.emit('startDiscussionPhase');
+    };
+
     useEffect(() => {
         if (socket) {
             socket.on('allPlayersChosen', () => {
                 setShowToast(true);
                 setAllPlayersChosen(true);
             });
+
+            socket.on('discussionPhaseStarted', () => {
+                navigate('/discussion');
+            });
         }
-    }, [ownPlayer, socket]);
+    }, [navigate, ownPlayer, socket]);
 
     return (
         <div className=' grid'>
@@ -49,12 +59,7 @@ const ChoosePlayer = ({ players }) => {
             </div>
 
             {allPlayersChosen && ownPlayer.host && (
-                <Button
-                    color='#10b981'
-                    handler={() => {
-                        alert('Next Phase!');
-                    }}
-                >
+                <Button color='#10b981' handler={() => startDiscussionPhase()}>
                     Next Phase
                 </Button>
             )}
