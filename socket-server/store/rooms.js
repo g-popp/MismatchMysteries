@@ -49,7 +49,7 @@ const addUserToRoom = ({ roomId, name, id }) => {
     const isHost = room.users?.find(user => user.host);
 
     // Store the user
-    const user = { id, name, host: !isHost };
+    const user = { id, name, host: !isHost, imposter: false };
 
     if (!room.users) {
         room.users = [];
@@ -58,6 +58,18 @@ const addUserToRoom = ({ roomId, name, id }) => {
     room.users.push(user);
 
     return { user };
+};
+
+const makeUserImposter = id => {
+    const room = rooms.find(room => room.users.find(user => user.id === id));
+
+    if (room) {
+        const user = room.users.find(user => user.id === id);
+
+        if (user) {
+            user.imposter = true;
+        }
+    }
 };
 
 const removeUserFromRoom = id => {
@@ -75,8 +87,6 @@ const removeUserFromRoom = id => {
         }
 
         room.users = room.users.filter(user => user.id !== id);
-
-        console.log(room.users);
 
         if (room.users.length === 0) {
             rooms = rooms.filter(room => room.id !== room.id);
@@ -100,5 +110,6 @@ export {
     getRoom,
     getRoomFromUser,
     getUser,
+    makeUserImposter,
     removeUserFromRoom
 };

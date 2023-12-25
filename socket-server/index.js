@@ -8,6 +8,7 @@ import {
     addUserToRoom,
     getRoom,
     getRoomFromUser,
+    makeUserImposter,
     removeUserFromRoom
 } from './store/rooms.js';
 import getQuestions from './utils/getQuestions.js';
@@ -136,11 +137,13 @@ const sendQuestions = roomId => {
         .fetchSockets()
         .then(sockets => {
             sockets.forEach(socket => {
-                const question =
-                    playerIndex === imposterIndex
-                        ? imposterQuestion
-                        : normalQuestions;
-                socket.emit('question', question);
+                if (playerIndex === imposterIndex) {
+                    makeUserImposter(socket.id);
+                    socket.emit('question', imposterQuestion);
+                } else {
+                    socket.emit('question', normalQuestions);
+                }
+
                 playerIndex++;
             });
         })
