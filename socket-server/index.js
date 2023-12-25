@@ -99,6 +99,14 @@ io.on('connection', socket => {
         }
     });
 
+    socket.on('startDiscussionPhase', () => {
+        const room = getRoomFromUser(socket.id);
+
+        if (!room) return;
+
+        io.to(room.id).emit('discussionPhaseStarted');
+    });
+
     socket.on('disconnect', () => {
         removeUserFromRoom(socket.id);
 
