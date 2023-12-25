@@ -24,16 +24,12 @@ const Game = () => {
     useEffect(() => {
         if (socket) {
             socket.on('updateLobby', players => {
-                players = players.filter(player => player.id !== socket.id);
-                setPlayers(players);
-            });
-
-            socket.on('playerInfo', player => {
-                setOwnPlayer(player);
-                console.log(player);
+                setOwnPlayer(players.find(player => player.id === socket.id));
+                setPlayers(players.filter(player => player.id !== socket.id));
             });
 
             socket.on('questions', questions => {
+                console.log(questions);
                 setQuestions(questions);
             });
         }
