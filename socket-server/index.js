@@ -13,7 +13,6 @@ import {
     addUserToRoom,
     getRoom,
     getRoomFromUser,
-    getUser,
     makeUserImposter,
     removeUserFromRoom
 } from './store/rooms.js';
@@ -77,10 +76,8 @@ io.on('connection', socket => {
         makeUserImposter(roomId);
 
         const room = getRoom(roomId);
-        const user = getUser(socket.id);
 
         io.to(roomId).emit('gameStarted');
-        io.to(socket.id).emit('playerInfo', user);
         io.to(roomId).emit('updateLobby', room.users);
 
         sendQuestions(roomId);
