@@ -33,7 +33,7 @@ const Game = () => {
                 console.log(player);
             });
 
-            socket.on('question', questions => {
+            socket.on('questions', questions => {
                 setQuestions(questions);
             });
         }
