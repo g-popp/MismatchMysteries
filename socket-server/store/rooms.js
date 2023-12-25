@@ -60,16 +60,24 @@ const addUserToRoom = ({ roomId, name, id }) => {
     return { user };
 };
 
-const makeUserImposter = id => {
-    const room = rooms.find(room => room.users.find(user => user.id === id));
+const makeUserImposter = roomId => {
+    const room = getRoom(roomId);
+    if (!room) return;
 
-    if (room) {
-        const user = room.users.find(user => user.id === id);
+    const users = room.users;
+    if (!users) return;
 
-        if (user) {
+    const imposterIndex = Math.floor(Math.random() * users.length);
+
+    let playerIndex = 0;
+
+    users.forEach(user => {
+        if (playerIndex === imposterIndex) {
             user.imposter = true;
         }
-    }
+
+        playerIndex++;
+    });
 };
 
 const removeUserFromRoom = id => {

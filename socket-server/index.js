@@ -68,9 +68,9 @@ io.on('connection', socket => {
     });
 
     socket.on('startGame', ({ roomId }) => {
-        let room = getRoom(roomId);
+        makeUserImposter(roomId);
 
-        if (!room) return;
+        const room = getRoom(roomId);
 
         io.to(roomId).emit('gameStarted');
         io.to(roomId).emit('updateLobby', room.users);
@@ -126,28 +126,10 @@ const sendQuestions = roomId => {
 
     if (!room) return;
 
-    const normalQuestions = getQuestions()[0];
+    const normalQuestion = getQuestions()[0];
     const imposterQuestion = getQuestions()[1];
 
-    const imposterIndex = Math.floor(Math.random() * room.users?.length);
+    if (!normalQuestion || !imposterQuestion) return;
 
-    let playerIndex = 0;
-
-    io.in(roomId)
-        .fetchSockets()
-        .then(sockets => {
-            sockets.forEach(socket => {
-                if (playerIndex === imposterIndex) {
-                    makeUserImposter(socket.id);
-                    socket.emit('question', imposterQuestion);
-                } else {
-                    socket.emit('question', normalQuestions);
-                }
-
-                playerIndex++;
-            });
-        })
-        .catch(err => {
-            console.log(err);
-        });
+    io.to(roomId).emit('questions', { normalQuestion, imposterQuestion });
 };
