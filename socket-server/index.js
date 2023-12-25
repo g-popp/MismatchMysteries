@@ -24,12 +24,7 @@ const PORT = process.env.PORT || 4000;
 
 const io = new Server(server, {
     cors: {
-        origin: [
-            'http://localhost:5173',
-            'http://localhost:4173',
-            'https://mismatch-mysteries.vercel.app/',
-            'mismatch-mysteries-git-main-g-popp.vercel.app'
-        ]
+        origin: '*'
     }
 });
 
