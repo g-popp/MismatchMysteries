@@ -43,7 +43,7 @@ const Discussion = () => {
                     </>
                 )}
             </div>
-            {!counter > 0 && !ownPlayer?.host && (
+            {!counter > 0 && ownPlayer?.host && (
                 <button
                     className={
                         'text-black text-center text-lg py-2 px-6 border border-black rounded shadow-sm shadow-black bg-zinc-500 mt-14'
