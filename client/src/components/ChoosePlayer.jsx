@@ -3,6 +3,7 @@ import { useAtom } from 'jotai';
 import { useContext, useEffect, useState } from 'react';
 import { SocketContext } from '../context/socket';
 import { playerAtom } from '../store/players';
+import Button from './Button';
 import Toast from './Toast';
 
 const ChoosePlayer = ({ players }) => {
@@ -21,15 +22,14 @@ const ChoosePlayer = ({ players }) => {
     useEffect(() => {
         if (socket) {
             socket.on('allPlayersChosen', () => {
-                console.log(ownPlayer);
-                !ownPlayer?.isHost && setShowToast(true);
+                setShowToast(true);
             });
         }
     }, [ownPlayer, socket]);
 
     return (
         <div className=' grid'>
-            <div className='grid grid-cols-2 gap-4'>
+            <div className='grid grid-cols-2 gap-4 mb-6'>
                 {players.map(player => (
                     <button
                         key={player.id}
@@ -45,6 +45,13 @@ const ChoosePlayer = ({ players }) => {
                     </button>
                 ))}
             </div>
+
+            {ownPlayer.host && (
+                <Button color='#10b981' handler={() => {}}>
+                    Skip
+                </Button>
+            )}
+
             <Toast
                 message={'All Player selected someone'}
                 show={showToast}
