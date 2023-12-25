@@ -12,6 +12,7 @@ const ChoosePlayer = ({ players }) => {
     const [selectedButton, setSelectedButton] = useState(null);
     const [ownPlayer] = useAtom(playerAtom);
     const [showToast, setShowToast] = useState(false);
+    const [allPlayersChosen, setAllPlayersChosen] = useState(false);
 
     const handleButtonClick = buttonId => {
         setSelectedButton(buttonId);
@@ -23,6 +24,7 @@ const ChoosePlayer = ({ players }) => {
         if (socket) {
             socket.on('allPlayersChosen', () => {
                 setShowToast(true);
+                setAllPlayersChosen(true);
             });
         }
     }, [ownPlayer, socket]);
@@ -46,9 +48,14 @@ const ChoosePlayer = ({ players }) => {
                 ))}
             </div>
 
-            {ownPlayer.host && (
-                <Button color='#10b981' handler={() => {}}>
-                    Skip
+            {allPlayersChosen && ownPlayer.host && (
+                <Button
+                    color='#10b981'
+                    handler={() => {
+                        alert('Next Phase!');
+                    }}
+                >
+                    Next Phase
                 </Button>
             )}
 
