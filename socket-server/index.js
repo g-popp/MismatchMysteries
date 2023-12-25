@@ -20,9 +20,16 @@ import getQuestions from './utils/getQuestions.js';
 
 const app = express();
 const server = createServer(app);
+const PORT = process.env.PORT || 4000;
+
 const io = new Server(server, {
     cors: {
-        origin: ['http://localhost:5173', 'http://localhost:4173']
+        origin: [
+            'http://localhost:5173',
+            'http://localhost:4173',
+            'https://mismatch-mysteries.vercel.app/',
+            'mismatch-mysteries-git-main-g-popp.vercel.app'
+        ]
     }
 });
 
@@ -144,8 +151,8 @@ io.on('connection', socket => {
     });
 });
 
-server.listen(4000, () => {
-    console.log('server running at http://localhost:4000');
+server.listen(PORT, () => {
+    console.log('server running on port', PORT);
 });
 
 const sendQuestions = roomId => {
