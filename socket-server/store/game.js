@@ -18,15 +18,28 @@ const addPlayerChoice = (playerId, playerChoice) => {
 const haveAllPlayersChosen = roomId => {
     const room = getRoom(roomId);
 
-    if (room) {
-        const players = room.users;
+    if (!room) return false;
 
-        if (players.length === playerChoices.length) {
-            return true;
-        }
+    const players = room.users;
 
+    if (!players) return false;
+
+    const playerIds = players.map(player => player.id);
+
+    const choices = playerChoices.map(choice => choice.chooser.id);
+
+    const uniqueChoices = [...new Set(choices)];
+
+    if (uniqueChoices.length !== playerIds.length) {
         return false;
+    } else {
+        clearChoices();
+        return true;
     }
+};
+
+const clearChoices = () => {
+    playerChoices.length = 0;
 };
 
 export { addPlayerChoice, haveAllPlayersChosen };
