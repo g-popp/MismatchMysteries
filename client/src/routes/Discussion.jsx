@@ -1,10 +1,13 @@
 import { useAtom } from 'jotai';
 import { useEffect, useState } from 'react';
 import QuestionCard from '../components/QuestionCard';
-import { playerAtom } from '../store/players';
+import { playerAtom, selectedPlayerAtom } from '../store/players';
+import { questionsAtom } from '../store/questions';
 
 const Discussion = () => {
     const [ownPlayer] = useAtom(playerAtom);
+    const [selectedPlayer] = useAtom(selectedPlayerAtom);
+    const [questions] = useAtom(questionsAtom);
 
     const [counter, setCounter] = useState(5);
 
@@ -29,7 +32,7 @@ const Discussion = () => {
                         <h2 className=' flex flex-col gap-8 text-3xl items-center'>
                             You chose:{' '}
                             <span className='text-green-400 text-8xl'>
-                                PlayerXY
+                                {selectedPlayer && selectedPlayer.name}
                             </span>
                         </h2>
 
@@ -37,7 +40,7 @@ const Discussion = () => {
                             <h2 className='text-2xl mb-4'>Real Question:</h2>
                             <QuestionCard
                                 size={'small'}
-                                question='Wer würde am ehesten bei einer Reality-TV-Show mitmachen?'
+                                question={questions.normalQuestion}
                             />
                         </div>
                     </>

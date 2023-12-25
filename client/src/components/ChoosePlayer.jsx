@@ -3,7 +3,7 @@ import { useAtom } from 'jotai';
 import { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SocketContext } from '../context/socket';
-import { playerAtom } from '../store/players';
+import { playerAtom, selectedPlayerAtom } from '../store/players';
 import Button from './Button';
 import Toast from './Toast';
 
@@ -12,12 +12,17 @@ const ChoosePlayer = ({ players }) => {
     const navigate = useNavigate();
 
     const [selectedButton, setSelectedButton] = useState(null);
+    const [, setSelectedPlayer] = useAtom(selectedPlayerAtom);
     const [ownPlayer] = useAtom(playerAtom);
     const [showToast, setShowToast] = useState(false);
     const [allPlayersChosen, setAllPlayersChosen] = useState(false);
 
     const handleButtonClick = buttonId => {
         setSelectedButton(buttonId);
+
+        // Set selected player in store
+        const chosenPlayer = players.find(player => player.id === buttonId);
+        setSelectedPlayer(chosenPlayer);
 
         socket.emit('choosePlayer', { playerId: buttonId });
     };

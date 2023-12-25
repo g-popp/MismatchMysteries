@@ -1,12 +1,16 @@
+import { useAtom } from 'jotai';
 import { useContext, useEffect, useState } from 'react';
 import ChoosePlayer from '../components/ChoosePlayer';
 import QuestionCard from '../components/QuestionCard';
 import { SocketContext } from '../context/socket';
+import { playerAtom } from '../store/players';
+import { questionsAtom } from '../store/questions';
 
 const Game = () => {
     const socket = useContext(SocketContext);
-    const [question, setQuestion] = useState('');
+    const [questions, setQuestions] = useAtom(questionsAtom);
     const [players, setPlayers] = useState([]);
+    const [ownPlayer, setOwnPlayer] = useAtom(playerAtom);
 
     const [counter, setCounter] = useState(5);
 
@@ -24,12 +28,16 @@ const Game = () => {
                 setPlayers(players);
             });
 
-            socket.on('question', question => {
-                console.log(question);
-                setQuestion(question);
+            socket.on('playerInfo', player => {
+                setOwnPlayer(player);
+                console.log(player);
+            });
+
+            socket.on('question', questions => {
+                setQuestions(questions);
             });
         }
-    }, [socket]);
+    }, [setPlayers, socket, setOwnPlayer, ownPlayer, setQuestions]);
 
     return (
         <div className='flex flex-col gap-20 items-center'>
@@ -38,7 +46,13 @@ const Game = () => {
                 <h2 className='text-4xl'>Game starts in {counter}</h2>
             ) : (
                 <>
-                    <QuestionCard question={question} />
+                    <QuestionCard
+                        question={
+                            ownPlayer?.imposter
+                                ? questions.imposterQuestion
+                                : questions.normalQuestion
+                        }
+                    />
                     <ChoosePlayer players={players} />
                 </>
             )}
