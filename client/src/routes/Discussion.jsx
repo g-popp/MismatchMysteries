@@ -1,15 +1,28 @@
 import { useAtom } from 'jotai';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import QuestionCard from '../components/QuestionCard';
+import { SocketContext } from '../context/socket';
 import { playerAtom, selectedPlayerAtom } from '../store/players';
 import { questionsAtom } from '../store/questions';
 
 const Discussion = () => {
+    const socket = useContext(SocketContext);
+
+    const navigate = useNavigate();
+
     const [ownPlayer] = useAtom(playerAtom);
     const [selectedPlayer] = useAtom(selectedPlayerAtom);
     const [questions] = useAtom(questionsAtom);
 
     const [counter, setCounter] = useState(5);
+
+    useEffect(() => {
+        socket &&
+            socket.on('blamePhaseStarted', () => {
+                navigate('/blame');
+            });
+    }, [navigate, socket]);
 
     useEffect(() => {
         const timer =
@@ -18,10 +31,14 @@ const Discussion = () => {
         return () => clearInterval(timer);
     }, [counter]);
 
+    const startBlamePhase = () => {
+        socket.emit('startBlamePhase');
+    };
+
     return (
         <>
             <div className='flex flex-col items-center gap-24'>
-                <h1 className='text-2xl underline'>Discussion Round</h1>
+                <h1 className='text-2xl underline'>Discussion Phase</h1>
 
                 {counter > 0 ? (
                     <h2 className='text-4xl text-center'>
@@ -51,6 +68,7 @@ const Discussion = () => {
                     className={
                         'text-black text-center text-lg py-2 px-6 border border-black rounded shadow-sm shadow-black bg-zinc-500 mt-14'
                     }
+                    onClick={() => startBlamePhase()}
                 >
                     Next
                 </button>

@@ -9,7 +9,7 @@ import Toast from '../components/Toast';
 import { SocketContext } from '../context/socket';
 import { gameIdAtom } from '../store/game';
 import { nameAtom } from '../store/name';
-import { playerAtom } from '../store/players';
+import { allPlayersAtom, playerAtom } from '../store/players';
 
 const NewGame = () => {
     const socket = useContext(SocketContext);
@@ -17,7 +17,7 @@ const NewGame = () => {
 
     const [name] = useAtom(nameAtom);
     const [gameId, setGameId] = useAtom(gameIdAtom);
-    const [players, setPlayers] = useState([]);
+    const [players, setPlayers] = useAtom(allPlayersAtom);
     const [ownPlayer, setOwnPlayer] = useAtom(playerAtom);
     const [showToast, setShowToast] = useState(false);
 
@@ -49,7 +49,7 @@ const NewGame = () => {
                 });
             });
         }
-    }, [gameId, name, navigate, setOwnPlayer, socket]);
+    }, [gameId, name, navigate, setOwnPlayer, setPlayers, socket]);
 
     const leaveLobby = () => {
         socket && socket.emit('leaveLobby', { roomId: gameId });

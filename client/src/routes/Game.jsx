@@ -3,13 +3,13 @@ import { useContext, useEffect, useState } from 'react';
 import ChoosePlayer from '../components/ChoosePlayer';
 import QuestionCard from '../components/QuestionCard';
 import { SocketContext } from '../context/socket';
-import { playerAtom } from '../store/players';
+import { allPlayersAtom, playerAtom } from '../store/players';
 import { questionsAtom } from '../store/questions';
 
 const Game = () => {
     const socket = useContext(SocketContext);
     const [questions, setQuestions] = useAtom(questionsAtom);
-    const [players, setPlayers] = useState([]);
+    const [players, setPlayers] = useAtom(allPlayersAtom);
     const [ownPlayer, setOwnPlayer] = useAtom(playerAtom);
 
     const [counter, setCounter] = useState(5);
@@ -53,7 +53,7 @@ const Game = () => {
                                 : questions.normalQuestion
                         }
                     />
-                    <ChoosePlayer players={players} />
+                    <ChoosePlayer players={players} socket={socket} />
                 </>
             )}
         </div>

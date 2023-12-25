@@ -1,46 +1,37 @@
 /* eslint-disable react/prop-types */
 import { useAtom } from 'jotai';
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useContext, useEffect, useState } from 'react';
+import { SocketContext } from '../context/socket';
 import { playerAtom, selectedPlayerAtom } from '../store/players';
 import Button from './Button';
 import Toast from './Toast';
 
-const ChoosePlayer = ({ players, socket }) => {
-    const navigate = useNavigate();
+const BlamePlayer = ({ players }) => {
+    const socket = useContext(SocketContext);
 
     const [selectedButton, setSelectedButton] = useState(null);
-    const [, setSelectedPlayer] = useAtom(selectedPlayerAtom);
-    const [ownPlayer] = useAtom(playerAtom);
     const [showToast, setShowToast] = useState(false);
+    const [ownPlayer] = useAtom(playerAtom);
+    const [, setSelectedPlayer] = useAtom(selectedPlayerAtom);
     const [allPlayersChosen, setAllPlayersChosen] = useState(false);
 
     const handleButtonClick = buttonId => {
         setSelectedButton(buttonId);
 
-        // Set selected player in store
         const chosenPlayer = players.find(player => player.id === buttonId);
         setSelectedPlayer(chosenPlayer);
 
-        socket.emit('choosePlayer', { playerId: buttonId });
-    };
-
-    const startDiscussionPhase = () => {
-        socket.emit('startDiscussionPhase');
+        socket.emit('blamePlayer', { playerId: buttonId });
     };
 
     useEffect(() => {
         if (socket) {
-            socket.on('allPlayersChosen', () => {
+            socket.on('allPlayersBlamed', () => {
                 setShowToast(true);
                 setAllPlayersChosen(true);
             });
-
-            socket.on('discussionPhaseStarted', () => {
-                navigate('/discussion');
-            });
         }
-    }, [navigate, ownPlayer, socket]);
+    }, [socket]);
 
     return (
         <div className=' grid'>
@@ -62,8 +53,8 @@ const ChoosePlayer = ({ players, socket }) => {
             </div>
 
             {allPlayersChosen && ownPlayer.host && (
-                <Button color='#10b981' handler={() => startDiscussionPhase()}>
-                    Next Phase
+                <Button color='#10b981' handler={() => {}}>
+                    Next
                 </Button>
             )}
 
@@ -76,4 +67,4 @@ const ChoosePlayer = ({ players, socket }) => {
     );
 };
 
-export default ChoosePlayer;
+export default BlamePlayer;
