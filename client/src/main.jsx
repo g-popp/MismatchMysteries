@@ -13,6 +13,7 @@ import Discussion from './routes/Discussion.jsx';
 import Game from './routes/Game.jsx';
 import Join from './routes/Join.jsx';
 import NewGame from './routes/NewGame.jsx';
+import Reveal from './routes/Reveal.jsx';
 
 const router = createBrowserRouter([
     {
@@ -42,6 +43,10 @@ const router = createBrowserRouter([
             {
                 path: '/blame',
                 element: <Blame />
+            },
+            {
+                path: '/reveal',
+                element: <Reveal />
             }
         ]
     }
