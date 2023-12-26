@@ -6,7 +6,8 @@ import {
     addPlayerBlame,
     addPlayerChoice,
     haveAllPlayersBlamed,
-    haveAllPlayersChosen
+    haveAllPlayersChosen,
+    revealMismatch
 } from './store/game.js';
 import {
     addRoom,
@@ -142,7 +143,10 @@ io.on('connection', socket => {
 
         if (!room) return;
 
+        const result = revealMismatch();
+
         io.to(room.id).emit('revealPhaseStarted');
+        io.to(room.id).emit('revealResult', result);
     });
 
     socket.on('disconnect', () => {

@@ -98,6 +98,9 @@ const revealMismatch = () => {
 
     const defaults = sortedBlames.filter(player => !player.imposter);
 
+    if (!imposter) return 'imposterWon';
+    if (!defaults) return 'defaultsWon';
+
     if (imposter.count <= defaults[0].count) {
         return 'imposterWon';
     }
