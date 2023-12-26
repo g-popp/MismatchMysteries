@@ -129,20 +129,28 @@ io.on('connection', socket => {
         io.to(room.id).emit('discussionPhaseStarted');
     });
 
-    socket.on('disconnect', () => {
-        removeUserFromRoom(socket.id);
-
-        // TODO: remove room if no users
-
-        console.log('Client disconnected', socket.id);
-    });
-
     socket.on('startBlamePhase', () => {
         const room = getRoomFromUser(socket.id);
 
         if (!room) return;
 
         io.to(room.id).emit('blamePhaseStarted');
+    });
+
+    socket.on('startRevealPhase', () => {
+        const room = getRoomFromUser(socket.id);
+
+        if (!room) return;
+
+        io.to(room.id).emit('revealPhaseStarted');
+    });
+
+    socket.on('disconnect', () => {
+        removeUserFromRoom(socket.id);
+
+        // TODO: remove room if no users
+
+        console.log('Client disconnected', socket.id);
     });
 });
 
