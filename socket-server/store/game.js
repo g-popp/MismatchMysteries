@@ -71,28 +71,31 @@ const haveAllPlayersBlamed = roomId => {
     }
 };
 
-// TODO: Add room id to this function
-const getMostCommonBlame = () => {
-    const choices = playerBlames.map(choice => choice.chosen);
+const getMostCommonBlame = roomId => {
+    const room = getRoom(roomId);
+    if (!room) return false;
+
+    const players = room.users;
+    if (!players) return false;
+
+    const choices = playerBlames.map(choice => choice.chosen.id);
 
     const uniqueChoices = [...new Set(choices)];
 
-    const counts = uniqueChoices.map(choice => {
-        return {
-            id: choice.id,
-            name: choice.name,
-            imposter: choice.imposter,
-            count: choices.filter(c => c.id === choice.id).length
-        };
-    });
+    const sortedPlayers = uniqueChoices
+        .map(choice => {
+            const count = choices.filter(player => player === choice).length;
+            const player = players.find(player => player.id === choice);
 
-    const sorted = counts.sort((a, b) => b.count - a.count);
+            return { ...player, count };
+        })
+        .sort((a, b) => b.count - a.count);
 
-    return sorted;
+    return sortedPlayers;
 };
 
-const revealMismatch = () => {
-    const sortedBlames = getMostCommonBlame();
+const revealMismatch = roomId => {
+    const sortedBlames = getMostCommonBlame(roomId);
 
     const imposter = sortedBlames.find(player => player.imposter);
 

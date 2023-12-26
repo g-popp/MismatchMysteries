@@ -31,8 +31,6 @@ const io = new Server(server, {
 
 const { randomUUID } = new ShortUniqueId({ length: 8 });
 
-let rooms = {};
-
 io.on('connection', socket => {
     console.log('New client connected', socket.id);
 
@@ -143,7 +141,7 @@ io.on('connection', socket => {
 
         if (!room) return;
 
-        const result = revealMismatch();
+        const result = revealMismatch(room.id);
 
         io.to(room.id).emit('revealPhaseStarted');
         io.to(room.id).emit('revealResult', result);
