@@ -1,6 +1,7 @@
 /* eslint-disable react/prop-types */
 import { useAtom } from 'jotai';
 import { useContext, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { SocketContext } from '../context/socket';
 import { playerAtom, selectedPlayerAtom } from '../store/players';
 import Button from './Button';
@@ -8,6 +9,7 @@ import Toast from './Toast';
 
 const BlamePlayer = ({ players }) => {
     const socket = useContext(SocketContext);
+    const navigate = useNavigate();
 
     const [selectedButton, setSelectedButton] = useState(null);
     const [showToast, setShowToast] = useState(false);
@@ -24,14 +26,24 @@ const BlamePlayer = ({ players }) => {
         socket.emit('blamePlayer', { playerId: buttonId });
     };
 
+    const startRevealPhase = () => {
+        if (allPlayersChosen && ownPlayer.host) {
+            socket.emit('startRevealPhase');
+        }
+    };
+
     useEffect(() => {
         if (socket) {
             socket.on('allPlayersBlamed', () => {
                 setShowToast(true);
                 setAllPlayersChosen(true);
             });
+
+            socket.on('revealPhaseStarted', () => {
+                navigate('/reveal');
+            });
         }
-    }, [socket]);
+    }, [allPlayersChosen, navigate, ownPlayer, socket]);
 
     return (
         <div className=' grid'>
@@ -53,7 +65,7 @@ const BlamePlayer = ({ players }) => {
             </div>
 
             {allPlayersChosen && ownPlayer.host && (
-                <Button color='#10b981' handler={() => {}}>
+                <Button color='#10b981' handler={() => startRevealPhase()}>
                     Next
                 </Button>
             )}
