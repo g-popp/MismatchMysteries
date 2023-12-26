@@ -62,6 +62,7 @@ const addUserToRoom = ({ roomId, name, id }) => {
 
 const makeUserImposter = roomId => {
     const room = getRoom(roomId);
+
     if (!room) return;
 
     const users = room.users;
@@ -74,6 +75,7 @@ const makeUserImposter = roomId => {
     users.forEach(user => {
         if (playerIndex === imposterIndex) {
             user.imposter = true;
+            console.log("User's an imposter", user.name);
         }
 
         playerIndex++;
