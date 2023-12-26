@@ -29,7 +29,7 @@ const Join = () => {
     };
 
     useEffect(() => {
-        socket &&
+        if (socket) {
             socket.on('roomExists', exists => {
                 if (exists) {
                     socket.emit('joinLobby', { roomId: gameId, name: name });
@@ -40,6 +40,9 @@ const Join = () => {
                     setShowToast(true);
                 }
             });
+
+            return () => socket.off('roomExists');
+        }
     }, [gameId, name, navigate, socket]);
 
     return (

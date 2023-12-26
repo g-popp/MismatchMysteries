@@ -73,6 +73,8 @@ const Home = () => {
                 setGameId(roomId);
                 navigate(`/newGame/${roomId}`);
             });
+
+            return () => socket.off('lobbyCreated');
         }
     }, [navigate, setGameId, socket]);
 

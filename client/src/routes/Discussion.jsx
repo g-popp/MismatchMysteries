@@ -18,10 +18,15 @@ const Discussion = () => {
     const [counter, setCounter] = useState(5);
 
     useEffect(() => {
-        socket &&
+        if (socket) {
             socket.on('blamePhaseStarted', () => {
                 navigate('/blame');
             });
+
+            return () => {
+                socket && socket.off('blamePhaseStarted');
+            };
+        }
     }, [navigate, socket]);
 
     useEffect(() => {

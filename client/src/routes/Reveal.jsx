@@ -36,6 +36,10 @@ const Reveal = () => {
                         : !ownPlayer.imposter
                 );
             });
+
+            return () => {
+                socket.off('revealResult');
+            };
         }
     }, [allPlayers, ownPlayer, socket, youWon]);
 

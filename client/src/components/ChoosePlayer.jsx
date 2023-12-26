@@ -39,6 +39,11 @@ const ChoosePlayer = ({ players, socket }) => {
             socket.on('discussionPhaseStarted', () => {
                 navigate('/discussion');
             });
+
+            return () => {
+                socket.off('allPlayersChosen');
+                socket.off('discussionPhaseStarted');
+            };
         }
     }, [navigate, ownPlayer, socket]);
 

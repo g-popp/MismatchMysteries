@@ -42,6 +42,11 @@ const BlamePlayer = ({ players }) => {
             socket.on('revealPhaseStarted', () => {
                 navigate('/reveal');
             });
+
+            return () => {
+                socket.off('allPlayersBlamed');
+                socket.off('revealPhaseStarted');
+            };
         }
     }, [allPlayersChosen, navigate, ownPlayer, socket]);
 

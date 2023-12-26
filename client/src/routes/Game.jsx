@@ -32,6 +32,11 @@ const Game = () => {
                 console.log(questions);
                 setQuestions(questions);
             });
+
+            return () => {
+                socket.off('updateLobby');
+                socket.off('questions');
+            };
         }
     }, [setPlayers, socket, setOwnPlayer, ownPlayer, setQuestions]);
 

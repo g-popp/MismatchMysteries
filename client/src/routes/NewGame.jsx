@@ -48,6 +48,13 @@ const NewGame = () => {
                     setPlayers(players);
                 });
             });
+
+            return () => {
+                socket.off('updateLobby');
+                socket.off('playerInfo');
+                socket.off('gameStarted');
+                socket.off('disconnect');
+            };
         }
     }, [gameId, name, navigate, setOwnPlayer, setPlayers, socket]);
 
