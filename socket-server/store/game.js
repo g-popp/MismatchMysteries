@@ -71,9 +71,45 @@ const haveAllPlayersBlamed = roomId => {
     }
 };
 
+// TODO: Add room id to this function
+const getMostCommonBlame = () => {
+    const choices = playerBlames.map(choice => choice.chosen);
+
+    const uniqueChoices = [...new Set(choices)];
+
+    const counts = uniqueChoices.map(choice => {
+        return {
+            id: choice.id,
+            name: choice.name,
+            imposter: choice.imposter,
+            count: choices.filter(c => c.id === choice.id).length
+        };
+    });
+
+    const sorted = counts.sort((a, b) => b.count - a.count);
+
+    return sorted;
+};
+
+const revealMismatch = () => {
+    const sortedBlames = getMostCommonBlame();
+
+    const imposter = sortedBlames.find(player => player.imposter);
+
+    const defaults = sortedBlames.filter(player => !player.imposter);
+
+    if (imposter.count <= defaults[0].count) {
+        return 'imposterWon';
+    }
+
+    return 'defaultsWon';
+};
+
 export {
     addPlayerBlame,
     addPlayerChoice,
+    getMostCommonBlame,
     haveAllPlayersBlamed,
-    haveAllPlayersChosen
+    haveAllPlayersChosen,
+    revealMismatch
 };
