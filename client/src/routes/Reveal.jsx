@@ -6,6 +6,7 @@ import { SocketContext } from '../context/socket';
 import { gameIdAtom } from '../store/game';
 import { allPlayersAtom, playerAtom } from '../store/players';
 import { questionsAtom } from '../store/questions';
+import QuestionCard from '../components/QuestionCard';
 
 const Reveal = () => {
     const socket = useContext(SocketContext);
