@@ -5,6 +5,7 @@ import { Server } from 'socket.io';
 import {
     addPlayerBlame,
     addPlayerChoice,
+    clearForNewGame,
     haveAllPlayersBlamed,
     haveAllPlayersChosen,
     revealMismatch
@@ -56,6 +57,10 @@ io.on('connection', socket => {
         socket.join(roomId);
         socket.emit('playerInfo', user.user);
 
+        io.to(roomId).emit('updateLobby', getRoom(roomId).users);
+    });
+
+    socket.on('refreshLobby', ({ roomId }) => {
         io.to(roomId).emit('updateLobby', getRoom(roomId).users);
     });
 
@@ -145,6 +150,16 @@ io.on('connection', socket => {
 
         io.to(room.id).emit('revealPhaseStarted');
         io.to(room.id).emit('revealResult', result);
+    });
+
+    socket.on('startNextRound', () => {
+        const room = getRoomFromUser(socket.id);
+
+        if (!room) return;
+
+        clearForNewGame(room.id);
+
+        io.to(room.id).emit('nextRoundStarted');
     });
 
     socket.on('disconnect', () => {

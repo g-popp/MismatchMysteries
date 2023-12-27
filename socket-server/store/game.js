@@ -111,9 +111,30 @@ const revealMismatch = roomId => {
     return 'defaultsWon';
 };
 
+const clearForNewGame = roomId => {
+    const room = getRoom(roomId);
+    if (!room) return false;
+
+    const players = room.users;
+
+    if (!players) return false;
+
+    // Clear choices and blames
+    playerChoices.length = 0;
+    playerBlames.length = 0;
+
+    // Clear imposter
+    players.forEach(player => {
+        player.imposter = false;
+    });
+
+    return true;
+};
+
 export {
     addPlayerBlame,
     addPlayerChoice,
+    clearForNewGame,
     getMostCommonBlame,
     haveAllPlayersBlamed,
     haveAllPlayersChosen,
