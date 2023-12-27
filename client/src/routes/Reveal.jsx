@@ -1,19 +1,27 @@
 import { useAtom } from 'jotai';
 import { useContext, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Button from '../components/Button';
 import { SocketContext } from '../context/socket';
+import { gameIdAtom } from '../store/game';
 import { allPlayersAtom, playerAtom } from '../store/players';
 
 const Reveal = () => {
     const socket = useContext(SocketContext);
+    const navigate = useNavigate();
 
     const [counter, setCounter] = useState(5);
     const [youWon, setYouWon] = useState(false);
+    const [gameId] = useAtom(gameIdAtom);
 
     const [allPlayers] = useAtom(allPlayersAtom);
     const [ownPlayer] = useAtom(playerAtom);
 
     const [imposter, setImposter] = useState(null);
+
+    const startNextRound = () => {
+        socket && socket.emit('startNextRound');
+    };
 
     useEffect(() => {
         const timer =
@@ -37,11 +45,16 @@ const Reveal = () => {
                 );
             });
 
+            socket.on('nextRoundStarted', () => {
+                navigate(`/newGame/${gameId}`);
+            });
+
             return () => {
                 socket.off('revealResult');
+                socket.off('nextRoundStarted');
             };
         }
-    }, [allPlayers, ownPlayer, socket, youWon]);
+    }, [allPlayers, gameId, navigate, ownPlayer, socket, youWon]);
 
     return (
         <div className='flex flex-col gap-20 items-center'>
@@ -65,7 +78,7 @@ const Reveal = () => {
                     </h2>
                     {ownPlayer?.host && (
                         <Button
-                            handler={() => {}}
+                            handler={() => startNextRound()}
                             color='#FF9B71'
                             className='text-black text-xl py-4 px-6 border border-black rounded shadow-sm shadow-black'
                         >

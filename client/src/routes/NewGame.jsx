@@ -7,7 +7,7 @@ import Button from '../components/Button';
 import PlayerCard from '../components/PlayerCard';
 import Toast from '../components/Toast';
 import { SocketContext } from '../context/socket';
-import { gameIdAtom } from '../store/game';
+import { gameIdAtom, isGameRunningAtom } from '../store/game';
 import { nameAtom } from '../store/name';
 import { allPlayersAtom, playerAtom } from '../store/players';
 
@@ -20,19 +20,23 @@ const NewGame = () => {
     const [players, setPlayers] = useAtom(allPlayersAtom);
     const [ownPlayer, setOwnPlayer] = useAtom(playerAtom);
     const [showToast, setShowToast] = useState(false);
+    const [isGameRunning] = useAtom(isGameRunningAtom);
 
     const [parent] = useAutoAnimate();
 
     useEffect(() => {
         if (gameId && socket) {
-            socket.emit('joinLobby', { roomId: gameId, name: name });
+            !isGameRunning
+                ? socket.emit('joinLobby', { roomId: gameId, name: name })
+                : socket.emit('refreshLobby', { roomId: gameId });
 
             socket.on('error', error => {
                 console.log(error);
             });
 
             socket.on('updateLobby', players => {
-                setPlayers(players);
+                setOwnPlayer(players.find(player => player.id === socket.id));
+                setPlayers(players.filter(player => player.id !== socket.id));
             });
 
             socket.on('playerInfo', player => {
@@ -56,7 +60,16 @@ const NewGame = () => {
                 socket.off('disconnect');
             };
         }
-    }, [gameId, name, navigate, setOwnPlayer, setPlayers, socket]);
+    }, [
+        gameId,
+        isGameRunning,
+        name,
+        navigate,
+        ownPlayer,
+        setOwnPlayer,
+        setPlayers,
+        socket
+    ]);
 
     const leaveLobby = () => {
         socket && socket.emit('leaveLobby', { roomId: gameId });
@@ -66,7 +79,7 @@ const NewGame = () => {
     };
 
     const startGame = () => {
-        if (players.length < 3) {
+        if (players.length < 2) {
             setShowToast(true);
             return;
         }
@@ -93,6 +106,11 @@ const NewGame = () => {
                     className='flex flex-col gap-2 w-64 h-32  items-center m-2 overflow-y-scroll'
                     ref={parent}
                 >
+                    <PlayerCard
+                        name={ownPlayer.name}
+                        host={ownPlayer.host}
+                        backgroundColor='#FFFD82'
+                    />
                     {players.map(player => (
                         <PlayerCard
                             key={player.id}
