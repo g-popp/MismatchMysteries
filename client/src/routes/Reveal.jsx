@@ -6,7 +6,6 @@ import { SocketContext } from '../context/socket';
 import { gameIdAtom } from '../store/game';
 import { allPlayersAtom, playerAtom } from '../store/players';
 
-
 const Reveal = () => {
     const socket = useContext(SocketContext);
     const navigate = useNavigate();
@@ -17,8 +16,6 @@ const Reveal = () => {
 
     const [allPlayers] = useAtom(allPlayersAtom);
     const [ownPlayer] = useAtom(playerAtom);
-
-    const [questions] = useAtom(questionsAtom);
 
     const [imposter, setImposter] = useState(null);
 
@@ -79,8 +76,6 @@ const Reveal = () => {
                     <h2 className=' flex flex-col gap-8 text-3xl items-center'>
                         {youWon ? 'You won!' : 'You lost!'}
                     </h2>
-
-
                     {ownPlayer?.host && (
                         <Button
                             handler={() => startNextRound()}
