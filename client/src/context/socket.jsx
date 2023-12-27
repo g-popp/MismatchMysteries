@@ -1,10 +1,7 @@
 import { createContext, useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 
-const URL =
-    import.meta.env.VITE_NODE_ENV === 'production'
-        ? undefined
-        : 'localhost:4000';
+const URL = 'https://mismatchmysteries-production.up.railway.app/';
 
 export const SocketContext = createContext();
 

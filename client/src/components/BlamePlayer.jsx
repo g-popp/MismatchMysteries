@@ -1,51 +1,54 @@
 /* eslint-disable react/prop-types */
 import { useAtom } from 'jotai';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { SocketContext } from '../context/socket';
 import { playerAtom, selectedPlayerAtom } from '../store/players';
 import Button from './Button';
 import Toast from './Toast';
 
-const ChoosePlayer = ({ players, socket }) => {
+const BlamePlayer = ({ players }) => {
+    const socket = useContext(SocketContext);
     const navigate = useNavigate();
 
     const [selectedButton, setSelectedButton] = useState(null);
-    const [, setSelectedPlayer] = useAtom(selectedPlayerAtom);
-    const [ownPlayer] = useAtom(playerAtom);
     const [showToast, setShowToast] = useState(false);
+    const [ownPlayer] = useAtom(playerAtom);
+    const [, setSelectedPlayer] = useAtom(selectedPlayerAtom);
     const [allPlayersChosen, setAllPlayersChosen] = useState(false);
 
     const handleButtonClick = buttonId => {
         setSelectedButton(buttonId);
 
-        // Set selected player in store
         const chosenPlayer = players.find(player => player.id === buttonId);
         setSelectedPlayer(chosenPlayer);
 
-        socket.emit('choosePlayer', { playerId: buttonId });
+        socket.emit('blamePlayer', { playerId: buttonId });
     };
 
-    const startDiscussionPhase = () => {
-        socket.emit('startDiscussionPhase');
+    const startRevealPhase = () => {
+        if (allPlayersChosen && ownPlayer.host) {
+            socket.emit('startRevealPhase');
+        }
     };
 
     useEffect(() => {
         if (socket) {
-            socket.on('allPlayersChosen', () => {
+            socket.on('allPlayersBlamed', () => {
                 setShowToast(true);
                 setAllPlayersChosen(true);
             });
 
-            socket.on('discussionPhaseStarted', () => {
-                navigate('/discussion');
+            socket.on('revealPhaseStarted', () => {
+                navigate('/reveal');
             });
 
             return () => {
-                socket.off('allPlayersChosen');
-                socket.off('discussionPhaseStarted');
+                socket.off('allPlayersBlamed');
+                socket.off('revealPhaseStarted');
             };
         }
-    }, [navigate, ownPlayer, socket]);
+    }, [allPlayersChosen, navigate, ownPlayer, socket]);
 
     return (
         <div className=' grid'>
@@ -67,8 +70,8 @@ const ChoosePlayer = ({ players, socket }) => {
             </div>
 
             {allPlayersChosen && ownPlayer.host && (
-                <Button color='#10b981' handler={() => startDiscussionPhase()}>
-                    Next Phase
+                <Button color='#10b981' handler={() => startRevealPhase()}>
+                    Next
                 </Button>
             )}
 
@@ -81,4 +84,4 @@ const ChoosePlayer = ({ players, socket }) => {
     );
 };
 
-export default ChoosePlayer;
+export default BlamePlayer;

@@ -19,6 +19,12 @@ const addRoom = ({ id }) => {
 
 const getRoom = id => rooms.find(room => room.id === id);
 
+const getRoomFromUser = id => {
+    const room = rooms.find(room => room.users.find(user => user.id === id));
+
+    return room;
+};
+
 const removeRoom = id => {
     const room = rooms.find(room => room.id === id);
 
@@ -43,7 +49,7 @@ const addUserToRoom = ({ roomId, name, id }) => {
     const isHost = room.users?.find(user => user.host);
 
     // Store the user
-    const user = { id, name, host: !isHost };
+    const user = { id, name, host: !isHost, imposter: false };
 
     if (!room.users) {
         room.users = [];
@@ -52,6 +58,28 @@ const addUserToRoom = ({ roomId, name, id }) => {
     room.users.push(user);
 
     return { user };
+};
+
+const makeUserImposter = roomId => {
+    const room = getRoom(roomId);
+
+    if (!room) return;
+
+    const users = room.users;
+    if (!users) return;
+
+    const imposterIndex = Math.floor(Math.random() * users.length);
+
+    let playerIndex = 0;
+
+    users.forEach(user => {
+        if (playerIndex === imposterIndex) {
+            user.imposter = true;
+            console.log("User's an imposter", user.name);
+        }
+
+        playerIndex++;
+    });
 };
 
 const removeUserFromRoom = id => {
@@ -73,7 +101,25 @@ const removeUserFromRoom = id => {
         if (room.users.length === 0) {
             rooms = rooms.filter(room => room.id !== room.id);
         }
+
+        return room.users;
     }
 };
 
-export { addRoom, addUserToRoom, getRoom, removeUserFromRoom };
+const getUser = id => {
+    const room = rooms.find(room => room.users.find(user => user.id === id));
+
+    if (room) {
+        return room.users.find(user => user.id === id);
+    }
+};
+
+export {
+    addRoom,
+    addUserToRoom,
+    getRoom,
+    getRoomFromUser,
+    getUser,
+    makeUserImposter,
+    removeUserFromRoom
+};

@@ -5,7 +5,7 @@ const PlayerCard = ({ name, backgroundColor, host }) => {
             style={{ backgroundColor: backgroundColor }}
         >
             <span>{name}</span>
-            <span className='text-white'>{host ? 'Game Host' : ''}</span>
+            <span className='text-black'>{host ? 'Game Host' : ''}</span>
         </div>
     );
 };

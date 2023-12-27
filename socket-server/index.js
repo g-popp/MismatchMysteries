@@ -3,26 +3,34 @@ import { createServer } from 'node:http';
 import ShortUniqueId from 'short-unique-id';
 import { Server } from 'socket.io';
 import {
+    addPlayerBlame,
+    addPlayerChoice,
+    clearForNewGame,
+    haveAllPlayersBlamed,
+    haveAllPlayersChosen,
+    revealMismatch
+} from './store/game.js';
+import {
     addRoom,
     addUserToRoom,
     getRoom,
+    getRoomFromUser,
+    makeUserImposter,
     removeUserFromRoom
 } from './store/rooms.js';
 import getQuestions from './utils/getQuestions.js';
 
 const app = express();
 const server = createServer(app);
+const PORT = process.env.PORT || 4000;
+
 const io = new Server(server, {
     cors: {
-        origin: ['http://localhost:5173', 'http://localhost:4173']
+        origin: '*'
     }
 });
 
 const { randomUUID } = new ShortUniqueId({ length: 8 });
-
-let rooms = {};
-let playerAnswers = {}; // Player <-> erhaltene Frage
-
 
 io.on('connection', socket => {
     console.log('New client connected', socket.id);
@@ -52,34 +60,106 @@ io.on('connection', socket => {
         io.to(roomId).emit('updateLobby', getRoom(roomId).users);
     });
 
+    socket.on('refreshLobby', ({ roomId }) => {
+        io.to(roomId).emit('updateLobby', getRoom(roomId).users);
+    });
+
     socket.on('leaveLobby', ({ roomId }) => {
         const room = getRoom(roomId);
 
         const users = room?.users;
 
-        removeUserFromRoom(socket.id);
-
-        if (room && users) {
-            io.to(roomId).emit('updateLobby', users);
-        }
+        const newUserList = removeUserFromRoom(socket.id);
 
         socket.leave(roomId);
+
+        if (!users) return;
+
+        io.to(roomId).emit('updateLobby', newUserList);
     });
 
     socket.on('startGame', ({ roomId }) => {
-        let room = getRoom(roomId);
+        makeUserImposter(roomId);
 
-        if (!room) return;
+        const room = getRoom(roomId);
 
         io.to(roomId).emit('gameStarted');
         io.to(roomId).emit('updateLobby', room.users);
 
         sendQuestions(roomId);
+    });
 
-        setTimeout(() => {
-            io.to(roomId).emit('gameEnded');
-            console.log('playerAnswers')
-        }, 10000);
+    socket.on('choosePlayer', ({ playerId }) => {
+        const updatedChoice = addPlayerChoice(socket.id, playerId);
+
+        if (updatedChoice.error) {
+            socket.emit('error', updatedChoice.error);
+            return;
+        }
+
+        const room = getRoomFromUser(socket.id);
+
+        if (!room) return;
+
+        if (haveAllPlayersChosen(room.id)) {
+            io.to(room.id).emit('allPlayersChosen');
+            console.log("All players have chosen, let's go!");
+        }
+    });
+
+    socket.on('blamePlayer', ({ playerId }) => {
+        const choice = addPlayerBlame(socket.id, playerId);
+
+        if (choice.error) {
+            socket.emit('error', choice.error);
+            return;
+        }
+
+        const room = getRoomFromUser(socket.id);
+
+        if (!room) return;
+
+        if (haveAllPlayersBlamed(room.id)) {
+            io.to(room.id).emit('allPlayersBlamed');
+            console.log("All players have blamed, let's go!");
+        }
+    });
+
+    socket.on('startDiscussionPhase', () => {
+        const room = getRoomFromUser(socket.id);
+
+        if (!room) return;
+
+        io.to(room.id).emit('discussionPhaseStarted');
+    });
+
+    socket.on('startBlamePhase', () => {
+        const room = getRoomFromUser(socket.id);
+
+        if (!room) return;
+
+        io.to(room.id).emit('blamePhaseStarted');
+    });
+
+    socket.on('startRevealPhase', () => {
+        const room = getRoomFromUser(socket.id);
+
+        if (!room) return;
+
+        const result = revealMismatch(room.id);
+
+        io.to(room.id).emit('revealPhaseStarted');
+        io.to(room.id).emit('revealResult', result);
+    });
+
+    socket.on('startNextRound', () => {
+        const room = getRoomFromUser(socket.id);
+
+        if (!room) return;
+
+        clearForNewGame(room.id);
+
+        io.to(room.id).emit('nextRoundStarted');
     });
 
     socket.on('sendAnswers',({roomId, targetPlayer_first}) =>{ // targetPlayer_first für erste Abstimmung ; targetPlayer_second für zweite Abstimmung bei ImposterWahl
@@ -101,8 +181,8 @@ io.on('connection', socket => {
     });
 });
 
-server.listen(4000, () => {
-    console.log('server running at http://localhost:4000');
+server.listen(PORT, () => {
+    console.log('server running on port', PORT);
 });
 
 
@@ -111,30 +191,10 @@ const sendQuestions = roomId => {
 
     if (!room) return;
 
-    const normalQuestions = getQuestions()[0];
+    const normalQuestion = getQuestions()[0];
     const imposterQuestion = getQuestions()[1];
 
-    const imposterIndex = Math.floor(Math.random() * room.users?.length);
+    if (!normalQuestion || !imposterQuestion) return;
 
-    let playerIndex = 0;
-
-    io.in(roomId)
-        .fetchSockets()
-        .then(sockets => {
-            sockets.forEach(socket => {
-                const question =
-                    playerIndex === imposterIndex
-                        ? imposterQuestion
-                        : normalQuestions;
-                    playerAnswers[socket.id] = {  //
-                        question: question,       //
-                        targetPlayer: null,       //
-                    }    
-                socket.emit('question', question);
-                playerIndex++;
-            });
-        })
-        .catch(err => {
-            console.log(err);
-        });
+    io.to(roomId).emit('questions', { normalQuestion, imposterQuestion });
 };
