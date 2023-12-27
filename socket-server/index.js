@@ -162,12 +162,10 @@ io.on('connection', socket => {
         io.to(room.id).emit('nextRoundStarted');
     });
 
-    socket.on('sendAnswers',({roomId, targetPlayer_first}) =>{ // targetPlayer_first für erste Abstimmung ; targetPlayer_second für zweite Abstimmung bei ImposterWahl
-        const room = getRoom(roomId)                       //
+    socket.on('sendAnswers',({roomId, targetPlayer_first}) =>{ 
+        const room = getRoom(roomId)                      
 
-       // if (!room || !playerAnswers[socket.id] || !room.users.includes(targetPlayer_first) || socket.id === targetPlayer_first) { // verhindert Selbsttargeting ChatGPT line ich versteh die nicht eventuell brauchen wir die auch nicht wenn frontend keine selbstauswahl zulässt
-       //     return; //
-       // }
+
 
         playerAnswers[socket.id].targetPlayer = targetPlayer_first;
     })
