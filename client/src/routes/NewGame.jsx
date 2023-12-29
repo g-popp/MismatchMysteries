@@ -10,6 +10,7 @@ import { SocketContext } from '../context/socket';
 import { gameIdAtom, isGameRunningAtom } from '../store/game';
 import { nameAtom } from '../store/name';
 import { allPlayersAtom, playerAtom } from '../store/players';
+import clipboardCopy from 'clipboard-copy'; //npm install clipboard-copy
 
 const NewGame = () => {
     const socket = useContext(SocketContext);
@@ -20,9 +21,16 @@ const NewGame = () => {
     const [players, setPlayers] = useAtom(allPlayersAtom);
     const [ownPlayer, setOwnPlayer] = useAtom(playerAtom);
     const [showToast, setShowToast] = useState(false);
+    const [showIDCopiedToast, setShowCopyToast] = useState(false);
     const [isGameRunning] = useAtom(isGameRunningAtom);
 
     const [parent] = useAutoAnimate();
+
+    const copyIdToClipboard = () => {
+        clipboardCopy(gameId);
+        setShowCopyToast(true);
+        setTimeout(() => setShowCopyToast(false), 2000);
+    };
 
     useEffect(() => {
         if (gameId && socket) {
@@ -92,7 +100,9 @@ const NewGame = () => {
             <h1 className='text-3xl underline'>Game Lobby</h1>
             <div className='flex flex-row gap-6 items-center'>
                 <h2 className='text-4xl'>ID: {gameId}</h2>
-                <div className='border border-black opacity-50 p-2 rounded-lg shadow-md hover:cursor-pointer'>
+                <div className='border border-black opacity-50 p-2 rounded-lg shadow-md hover:cursor-pointer'
+                    onClick={copyIdToClipboard}
+                >
                     <img
                         src={clipboard}
                         alt='copy link'
@@ -138,9 +148,15 @@ const NewGame = () => {
             </div>
             <Toast
                 message={'You need at least 3 Players'}
-                type={'error'}
+                type={'error'} //rot
                 show={showToast}
                 onClose={() => setShowToast(false)}
+            />
+            <Toast
+                message={'Game ID copied'}
+                type={'info'} //grün
+                show={showIDCopiedToast}
+                onClose={() => setShowCopyToast(false)}
             />
         </div>
     );
