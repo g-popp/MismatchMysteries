@@ -162,14 +162,6 @@ io.on('connection', socket => {
         io.to(room.id).emit('nextRoundStarted');
     });
 
-    socket.on('sendAnswers',({roomId, targetPlayer_first}) =>{ 
-        const room = getRoom(roomId)                      
-
-
-
-        playerAnswers[socket.id].targetPlayer = targetPlayer_first;
-    })
-
     socket.on('disconnect', () => {
         removeUserFromRoom(socket.id);
 
