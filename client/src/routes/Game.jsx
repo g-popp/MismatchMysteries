@@ -50,8 +50,8 @@ const Game = () => {
                     <QuestionCard
                         question={
                             ownPlayer?.imposter
-                                ? questions.imposterQuestion
-                                : questions.normalQuestion
+                                ? questions?.imposterQuestion
+                                : questions?.normalQuestion
                         }
                     />
                     <ChoosePlayer players={players} socket={socket} />
