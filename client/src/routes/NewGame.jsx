@@ -10,7 +10,7 @@ import { SocketContext } from '../context/socket';
 import { gameIdAtom, isGameRunningAtom } from '../store/game';
 import { nameAtom } from '../store/name';
 import { allPlayersAtom, playerAtom } from '../store/players';
-import clipboardCopy from 'clipboard-copy'; //npm install clipboard-copy
+import clipboardCopy from 'clipboard-copy'; 
 
 const NewGame = () => {
     const socket = useContext(SocketContext);
@@ -148,13 +148,13 @@ const NewGame = () => {
             </div>
             <Toast
                 message={'You need at least 3 Players'}
-                type={'error'} //rot
+                type={'error'} 
                 show={showToast}
                 onClose={() => setShowToast(false)}
             />
             <Toast
                 message={'Game ID copied'}
-                type={'info'} //grün
+                type={'none'} 
                 show={showIDCopiedToast}
                 onClose={() => setShowCopyToast(false)}
             />

@@ -6,8 +6,5 @@
     "workspaces": [
         "client",
         "socket-server"
-    ],
-    "dependencies": {
-        "clipboard-copy": "^4.0.1"
-    }
+    ]
 }
