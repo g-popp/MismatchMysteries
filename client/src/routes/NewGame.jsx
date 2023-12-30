@@ -21,14 +21,17 @@ const NewGame = () => {
     const [players, setPlayers] = useAtom(allPlayersAtom);
     const [ownPlayer, setOwnPlayer] = useAtom(playerAtom);
     const [showToast, setShowToast] = useState(false);
-    const [showIDCopiedToast, setShowCopyToast] = useState(false);
+    const [toastType, setToastType] = useState('')
     const [isGameRunning] = useAtom(isGameRunningAtom);
+    const [toastMessage, setToastMessage] = useState('');
 
     const [parent] = useAutoAnimate();
 
     const copyIdToClipboard = () => {
         clipboardCopy(gameId);
-        setShowCopyToast(true);
+        setToastMessage('Game ID copied')
+        setToastType('default');
+        setShowToast(true);
         setTimeout(() => setShowCopyToast(false), 2000);
     };
 
@@ -88,6 +91,8 @@ const NewGame = () => {
 
     const startGame = () => {
         if (players.length < 2) {
+            setToastMessage('You need at least 3 Players')
+            setToastType('error');
             setShowToast(true);
             return;
         }
@@ -147,16 +152,10 @@ const NewGame = () => {
                 </Button>
             </div>
             <Toast
-                message={'You need at least 3 Players'}
-                type={'error'} 
+                message={toastMessage}
+                type={toastType} 
                 show={showToast}
                 onClose={() => setShowToast(false)}
-            />
-            <Toast
-                message={'Game ID copied'}
-                type={'none'} 
-                show={showIDCopiedToast}
-                onClose={() => setShowCopyToast(false)}
             />
         </div>
     );
