@@ -1,7 +1,7 @@
 import { createContext, useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 
-const URL = 'https://mismatchmysteries-production.up.railway.app/';
+const URL = 'localhost:4000';
 
 export const SocketContext = createContext();
 
