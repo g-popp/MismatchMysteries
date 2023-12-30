@@ -9,7 +9,7 @@ import Toast from './Toast';
 const ChoosePlayer = ({ players, socket }) => {
     const navigate = useNavigate();
 
-    const [selectedButton, setSelectedButton] = useState(null);
+    const [selectedButton, setSelectedButton] = useState();
     const [, setSelectedPlayer] = useAtom(selectedPlayerAtom);
     const [ownPlayer] = useAtom(playerAtom);
     const [showToast, setShowToast] = useState(false);

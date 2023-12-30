@@ -11,7 +11,7 @@ const BlamePlayer = ({ players }) => {
     const socket = useContext(SocketContext);
     const navigate = useNavigate();
 
-    const [selectedButton, setSelectedButton] = useState(null);
+    const [selectedButton, setSelectedButton] = useState();
     const [showToast, setShowToast] = useState(false);
     const [ownPlayer] = useAtom(playerAtom);
     const [, setSelectedPlayer] = useAtom(selectedPlayerAtom);
