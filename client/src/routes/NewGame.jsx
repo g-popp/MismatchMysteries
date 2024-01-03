@@ -1,4 +1,5 @@
 import { useAutoAnimate } from '@formkit/auto-animate/react';
+import clipboardCopy from 'clipboard-copy';
 import { useAtom } from 'jotai';
 import { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -10,7 +11,6 @@ import { SocketContext } from '../context/socket';
 import { gameIdAtom, isGameRunningAtom } from '../store/game';
 import { nameAtom } from '../store/name';
 import { allPlayersAtom, playerAtom } from '../store/players';
-import clipboardCopy from 'clipboard-copy'; 
 
 const NewGame = () => {
     const socket = useContext(SocketContext);
@@ -21,7 +21,7 @@ const NewGame = () => {
     const [players, setPlayers] = useAtom(allPlayersAtom);
     const [ownPlayer, setOwnPlayer] = useAtom(playerAtom);
     const [showToast, setShowToast] = useState(false);
-    const [toastType, setToastType] = useState('')
+    const [toastType, setToastType] = useState('');
     const [isGameRunning] = useAtom(isGameRunningAtom);
     const [toastMessage, setToastMessage] = useState('');
 
@@ -29,10 +29,10 @@ const NewGame = () => {
 
     const copyIdToClipboard = () => {
         clipboardCopy(gameId);
-        setToastMessage('Game ID copied')
+        setToastMessage('Game ID copied');
         setToastType('default');
         setShowToast(true);
-        setTimeout(() => setShowCopyToast(false), 2000);
+        setTimeout(() => setShowToast(false), 2000);
     };
 
     useEffect(() => {
@@ -91,7 +91,7 @@ const NewGame = () => {
 
     const startGame = () => {
         if (players.length < 2) {
-            setToastMessage('You need at least 3 Players')
+            setToastMessage('You need at least 3 Players');
             setToastType('error');
             setShowToast(true);
             return;
@@ -105,7 +105,8 @@ const NewGame = () => {
             <h1 className='text-3xl underline'>Game Lobby</h1>
             <div className='flex flex-row gap-6 items-center'>
                 <h2 className='text-4xl'>ID: {gameId}</h2>
-                <div className='border border-black opacity-50 p-2 rounded-lg shadow-md hover:cursor-pointer'
+                <div
+                    className='border border-black opacity-50 p-2 rounded-lg shadow-md hover:cursor-pointer'
                     onClick={copyIdToClipboard}
                 >
                     <img
@@ -153,7 +154,7 @@ const NewGame = () => {
             </div>
             <Toast
                 message={toastMessage}
-                type={toastType} 
+                type={toastType}
                 show={showToast}
                 onClose={() => setShowToast(false)}
             />
