@@ -2,7 +2,10 @@ import { useAtom } from 'jotai';
 import { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import QuestionCard from '../components/QuestionCard';
+import SelectedPlayerDisplay from '../components/SelectedPlayerDisplay';
+import VotingTable from '../components/VotingTable';
 import { SocketContext } from '../context/socket';
+import { gameOptionsAtom } from '../store/game';
 import { playerAtom, selectedPlayerAtom } from '../store/players';
 import { questionsAtom } from '../store/questions';
 
@@ -14,6 +17,9 @@ const Discussion = () => {
     const [ownPlayer] = useAtom(playerAtom);
     const [selectedPlayer] = useAtom(selectedPlayerAtom);
     const [questions] = useAtom(questionsAtom);
+    const [playerChoices, setPlayerChoices] = useState([]);
+
+    const [gameOptions] = useAtom(gameOptionsAtom);
 
     const [counter, setCounter] = useState(5);
 
@@ -23,11 +29,16 @@ const Discussion = () => {
                 navigate('/blame');
             });
 
+            socket.on('choiceOfAllPlayers', playerChoices => {
+                setPlayerChoices(playerChoices);
+            });
+
             return () => {
-                socket && socket.off('blamePhaseStarted');
+                socket.off('blamePhaseStarted');
+                socket.off('choiceOfAllPlayers');
             };
         }
-    }, [navigate, socket]);
+    }, [navigate, socket, setPlayerChoices]);
 
     useEffect(() => {
         const timer =
@@ -51,12 +62,13 @@ const Discussion = () => {
                     </h2>
                 ) : (
                     <>
-                        <h2 className=' flex flex-col gap-8 text-3xl items-center'>
-                            You chose:{' '}
-                            <span className='text-violet-400 text-8xl'>
-                                {selectedPlayer && selectedPlayer.name}
-                            </span>
-                        </h2>
+                        {gameOptions.couchMode ? (
+                            <SelectedPlayerDisplay
+                                selectedPlayerName={selectedPlayer?.name}
+                            />
+                        ) : (
+                            <VotingTable playerChoices={playerChoices} />
+                        )}
 
                         <div>
                             <h2 className='text-2xl mb-4'>Real Question:</h2>
