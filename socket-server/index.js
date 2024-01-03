@@ -6,6 +6,7 @@ import {
     addPlayerBlame,
     addPlayerChoice,
     clearForNewGame,
+    getPlayerChoices,
     haveAllPlayersBlamed,
     haveAllPlayersChosen,
     revealMismatch
@@ -78,12 +79,12 @@ io.on('connection', socket => {
         io.to(roomId).emit('updateLobby', newUserList);
     });
 
-    socket.on('startGame', ({ roomId }) => {
+    socket.on('startGame', ({ roomId, options }) => {
         makeUserImposter(roomId);
 
         const room = getRoom(roomId);
 
-        io.to(roomId).emit('gameStarted');
+        io.to(roomId).emit('gameStarted', options);
         io.to(roomId).emit('updateLobby', room.users);
 
         sendQuestions(roomId);
@@ -131,6 +132,7 @@ io.on('connection', socket => {
         if (!room) return;
 
         io.to(room.id).emit('discussionPhaseStarted');
+        io.to(room.id).emit('choiceOfAllPlayers', getPlayerChoices(room.id));
     });
 
     socket.on('startBlamePhase', () => {
@@ -174,7 +176,6 @@ io.on('connection', socket => {
 server.listen(PORT, () => {
     console.log('server running on port', PORT);
 });
-
 
 const sendQuestions = roomId => {
     const room = getRoom(roomId);

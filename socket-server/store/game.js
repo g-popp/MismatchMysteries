@@ -16,6 +16,17 @@ const addPlayerChoice = (playerId, playerChoice) => {
     return { playerChoices };
 };
 
+const getPlayerChoices = roomId => {
+    const room = getRoom(roomId);
+    if (!room) return { error: 'Room not found' };
+
+    const players = room.users;
+
+    if (!players) return { error: 'Players not found' };
+
+    return playerChoices;
+};
+
 const haveAllPlayersChosen = roomId => {
     const room = getRoom(roomId);
 
@@ -136,6 +147,7 @@ export {
     addPlayerChoice,
     clearForNewGame,
     getMostCommonBlame,
+    getPlayerChoices,
     haveAllPlayersBlamed,
     haveAllPlayersChosen,
     revealMismatch
