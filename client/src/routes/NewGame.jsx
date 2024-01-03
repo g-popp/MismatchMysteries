@@ -8,7 +8,7 @@ import Button from '../components/Button';
 import PlayerCard from '../components/PlayerCard';
 import Toast from '../components/Toast';
 import { SocketContext } from '../context/socket';
-import { gameIdAtom, isGameRunningAtom } from '../store/game';
+import { gameIdAtom, gameOptionsAtom, isGameRunningAtom } from '../store/game';
 import { nameAtom } from '../store/name';
 import { allPlayersAtom, playerAtom } from '../store/players';
 
@@ -20,9 +20,11 @@ const NewGame = () => {
     const [gameId, setGameId] = useAtom(gameIdAtom);
     const [players, setPlayers] = useAtom(allPlayersAtom);
     const [ownPlayer, setOwnPlayer] = useAtom(playerAtom);
+    const [isGameRunning] = useAtom(isGameRunningAtom);
+    const [gameOptions, setGameOptions] = useAtom(gameOptionsAtom);
+
     const [showToast, setShowToast] = useState(false);
     const [toastType, setToastType] = useState('');
-    const [isGameRunning] = useAtom(isGameRunningAtom);
     const [toastMessage, setToastMessage] = useState('');
 
     const [parent] = useAutoAnimate();
@@ -54,7 +56,8 @@ const NewGame = () => {
                 setOwnPlayer(player);
             });
 
-            socket.on('gameStarted', () => {
+            socket.on('gameStarted', options => {
+                setGameOptions(options);
                 navigate(`/game/`);
             });
 
@@ -77,6 +80,7 @@ const NewGame = () => {
         name,
         navigate,
         ownPlayer,
+        setGameOptions,
         setOwnPlayer,
         setPlayers,
         socket
@@ -97,7 +101,11 @@ const NewGame = () => {
             return;
         }
 
-        socket && socket.emit('startGame', { roomId: gameId });
+        socket &&
+            socket.emit('startGame', {
+                roomId: gameId,
+                options: gameOptions
+            });
     };
 
     return (
