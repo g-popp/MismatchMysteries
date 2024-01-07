@@ -6,5 +6,8 @@
     "workspaces": [
         "client",
         "socket-server"
-    ]
+    ],
+    "devDependencies": {
+        "prettier": "3.1.1"
+    }
 }
