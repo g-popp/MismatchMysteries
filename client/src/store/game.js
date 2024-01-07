@@ -6,6 +6,6 @@ export const gameIdAtom = atomWithStorage();
 export const isGameRunningAtom = atom(false);
 
 export const gameOptionsAtom = atom({
-    couchMode: false,
+    couchMode: true,
     numberOfImposters: 1
 });

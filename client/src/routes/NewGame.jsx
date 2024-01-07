@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import Button from '../components/Button';
 import IdCard from '../components/IdCard';
 import PlayerCard from '../components/PlayerCard';
+import SettingsModal from '../components/SettingsModal';
 import Toast from '../components/Toast';
 import { SocketContext } from '../context/socket';
 import { gameIdAtom, gameOptionsAtom, isGameRunningAtom } from '../store/game';
@@ -28,8 +29,6 @@ const NewGame = () => {
     const [toastMessage, setToastMessage] = useState('');
 
     const [showOptions, setShowOptions] = useState(false);
-    const [couchMode, setCouchMode] = useState(false);
-    const [numberOfImposters, setNumberOfImposters] = useState(1);
 
     const [parent] = useAutoAnimate();
 
@@ -39,17 +38,6 @@ const NewGame = () => {
         setToastType('default');
         setShowToast(true);
         setTimeout(() => setShowToast(false), 2000);
-    };
-
-    const openOptions = () => {
-        if (ownPlayer.host) {
-            setShowOptions(true);
-        }
-    };
-
-    const handleNumberOfImpostersChange = event => {
-        const value = parseInt(event.target.value, 10);
-        setNumberOfImposters(value);
     };
 
     useEffect(() => {
@@ -131,51 +119,15 @@ const NewGame = () => {
                 gameId={gameId}
                 host={ownPlayer.host}
                 copyIdToClipboard={copyIdToClipboard}
-                openOptions={openOptions}
+                openOptions={() => setShowOptions(true)}
             />
 
-            {showOptions && (
-                <div className='fixed top-0 left-0 w-full h-full bg-black bg-opacity-50 flex items-center justify-center z-10'>
-                    <div className='bg-black p-20 border rounded-lg flex flex-col justify-between h-1/2'>
-                        <div>
-                            <h2 className='text-2xl mb-4'>Options</h2>
-                            <label className='flex items-center space-x-6'>
-                                <input
-                                    type='checkbox'
-                                    checked={couchMode}
-                                    onChange={setCouchMode}
-                                    /*setGameOptions(prevOptions => ({ ...prevOptions, couchMode: !prevOptions.couchMode}))*/
-                                    className='h-6 w-6'
-                                />
-                                <span className='text-lg'>Online Mode</span>
-                            </label>
-                        </div>
-                        <div className='mt-4'>
-                            <label className='block'>
-                                Number of Imposters:
-                                <select
-                                    value={numberOfImposters}
-                                    onChange={handleNumberOfImpostersChange}
-                                    className='w-full p-1 border rounded-md'
-                                >
-                                    <option value={1}>1</option>
-                                    <option value={2}>2</option>
-                                    <option value={3}>3</option>
-                                </select>
-                            </label>
-                        </div>
-                        <Button
-                            handler={() => setShowOptions(false)}
-                            color='#E84855'
-                            className='mt-4'
-                        >
-                            Close
-                        </Button>
-                    </div>
-                </div>
-            )}
+            <SettingsModal
+                isOpen={showOptions}
+                close={() => setShowOptions(false)}
+            />
 
-            <div className='border rounded-lg' style={{ zIndex: 1 }}>
+            <div className='border rounded-lg'>
                 <h2 className='text-2xl p-4'>Players:</h2>
                 <ul
                     className='flex flex-col gap-2 w-64 h-32  items-center m-2 overflow-y-scroll'
