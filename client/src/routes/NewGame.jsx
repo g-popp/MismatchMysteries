@@ -3,9 +3,10 @@ import clipboardCopy from 'clipboard-copy';
 import { useAtom } from 'jotai';
 import { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import clipboard from '../assets/clipboard.png';
 import Button from '../components/Button';
+import IdCard from '../components/IdCard';
 import PlayerCard from '../components/PlayerCard';
+import SettingsModal from '../components/SettingsModal';
 import Toast from '../components/Toast';
 import { SocketContext } from '../context/socket';
 import { gameIdAtom, gameOptionsAtom, isGameRunningAtom } from '../store/game';
@@ -26,6 +27,8 @@ const NewGame = () => {
     const [showToast, setShowToast] = useState(false);
     const [toastType, setToastType] = useState('');
     const [toastMessage, setToastMessage] = useState('');
+
+    const [showOptions, setShowOptions] = useState(false);
 
     const [parent] = useAutoAnimate();
 
@@ -111,19 +114,19 @@ const NewGame = () => {
     return (
         <div className='flex flex-col gap-20 items-center'>
             <h1 className='text-3xl underline'>Game Lobby</h1>
-            <div className='flex flex-row gap-6 items-center'>
-                <h2 className='text-4xl'>ID: {gameId}</h2>
-                <div
-                    className='border border-black opacity-50 p-2 rounded-lg shadow-md hover:cursor-pointer'
-                    onClick={copyIdToClipboard}
-                >
-                    <img
-                        src={clipboard}
-                        alt='copy link'
-                        className='h-6 opacity-80'
-                    />
-                </div>
-            </div>
+
+            <IdCard
+                gameId={gameId}
+                host={ownPlayer.host}
+                copyIdToClipboard={copyIdToClipboard}
+                openOptions={() => setShowOptions(true)}
+            />
+
+            <SettingsModal
+                isOpen={showOptions}
+                close={() => setShowOptions(false)}
+            />
+
             <div className='border rounded-lg'>
                 <h2 className='text-2xl p-4'>Players:</h2>
                 <ul

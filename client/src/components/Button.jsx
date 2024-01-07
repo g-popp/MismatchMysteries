@@ -3,6 +3,7 @@ const Button = ({ color, handler, children }) => {
         <button
             onClick={handler}
             style={{ backgroundColor: color }}
+            type='button'
             className={
                 'text-black text-center text-xl py-4 px-6 border border-black rounded shadow-sm shadow-black '
             }
