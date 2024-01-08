@@ -17,6 +17,8 @@
         "socket.io": "^4.7.2"
     },
     "devDependencies": {
-        "nodemon": "^3.0.1"
+        "esbuild-plugins-node-modules-polyfill": "^1.6.1",
+        "nodemon": "^3.0.1",
+        "rollup-plugin-polyfill-node": "^0.13.0"
     }
 }
