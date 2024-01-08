@@ -1,12 +1,17 @@
 import { createContext, useEffect, useState } from 'react';
 import { io } from 'socket.io-client';
 
-const URL = 'http://localhost:4000';
+const URL =
+    import.meta.env.MODE === 'development'
+        ? 'http://localhost:4000/'
+        : 'https://mismatchmysteries-production.up.railway.app/';
 
 export const SocketContext = createContext();
 
 export const SocketProvider = ({ children }) => {
     const [socket, setSocket] = useState();
+
+    console.log(import.meta.env.MODE);
 
     useEffect(() => {
         const newSocket = io(URL);
