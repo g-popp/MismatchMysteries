@@ -11,8 +11,6 @@ export const SocketContext = createContext();
 export const SocketProvider = ({ children }) => {
     const [socket, setSocket] = useState();
 
-    console.log(import.meta.env.MODE);
-
     useEffect(() => {
         const newSocket = io(URL);
 
