@@ -41,7 +41,7 @@ const Join = () => {
                 }
             });
 
-            return () => socket.off('roomExists');
+            return () => socket.removeAllListeners();
         }
     }, [gameId, name, navigate, socket]);
 

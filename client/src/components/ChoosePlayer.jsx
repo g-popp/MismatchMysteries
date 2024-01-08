@@ -41,8 +41,7 @@ const ChoosePlayer = ({ players, socket }) => {
             });
 
             return () => {
-                socket.off('allPlayersChosen');
-                socket.off('discussionPhaseStarted');
+                socket.removeAllListeners();
             };
         }
     }, [navigate, ownPlayer, socket]);

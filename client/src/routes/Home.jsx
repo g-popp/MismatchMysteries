@@ -74,7 +74,7 @@ const Home = () => {
                 navigate(`/newGame/${roomId}`);
             });
 
-            return () => socket.off('lobbyCreated');
+            return () => socket.removeAllListeners();
         }
     }, [navigate, setGameId, socket]);
 

@@ -56,11 +56,10 @@ const Reveal = () => {
             });
 
             return () => {
-                socket.off('revealResult');
-                socket.off('nextRoundStarted');
+                socket.removeAllListeners();
             };
         }
-    }, [allPlayers, gameId, imposter, navigate, ownPlayer, socket, youWon]);
+    }, [allPlayers, gameId, imposter, navigate, ownPlayer, socket]);
 
     return (
         <div className='flex flex-col gap-20 items-center'>

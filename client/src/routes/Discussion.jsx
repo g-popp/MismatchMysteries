@@ -34,8 +34,7 @@ const Discussion = () => {
             });
 
             return () => {
-                socket.off('blamePhaseStarted');
-                socket.off('choiceOfAllPlayers');
+                socket.removeAllListeners();
             };
         }
     }, [navigate, socket, setPlayerChoices]);
