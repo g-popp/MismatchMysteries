@@ -1,5 +1,6 @@
 import express from 'express';
 import { createServer } from 'node:http';
+import tls from 'node:tls';
 import ShortUniqueId from 'short-unique-id';
 import { Server } from 'socket.io';
 import {
@@ -20,6 +21,8 @@ import {
     removeUserFromRoom
 } from './store/rooms.js';
 import getQuestions from './utils/getQuestions.js';
+
+tls.DEFAULT_MAX_VERSION = 'TLSv1.2';
 
 const app = express();
 const server = createServer(app);
