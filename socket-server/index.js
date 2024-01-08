@@ -3,13 +3,13 @@ import { createServer } from 'node:http';
 import ShortUniqueId from 'short-unique-id';
 import { Server } from 'socket.io';
 import {
-    addPlayerBlame,
-    addPlayerChoice,
     clearForNewGame,
     getPlayerChoices,
     haveAllPlayersBlamed,
     haveAllPlayersChosen,
-    revealMismatch
+    revealMismatch,
+    updatePlayerChoice,
+    updatedPlayerBlame
 } from './store/game.js';
 import {
     addRoom,
@@ -91,7 +91,7 @@ io.on('connection', socket => {
     });
 
     socket.on('choosePlayer', ({ playerId }) => {
-        const updatedChoice = addPlayerChoice(socket.id, playerId);
+        const updatedChoice = updatePlayerChoice(socket.id, playerId);
 
         if (updatedChoice.error) {
             socket.emit('error', updatedChoice.error);
@@ -109,7 +109,7 @@ io.on('connection', socket => {
     });
 
     socket.on('blamePlayer', ({ playerId }) => {
-        const choice = addPlayerBlame(socket.id, playerId);
+        const choice = updatedPlayerBlame(socket.id, playerId);
 
         if (choice.error) {
             socket.emit('error', choice.error);
