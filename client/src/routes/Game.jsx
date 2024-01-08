@@ -45,17 +45,23 @@ const Game = () => {
             <h1 className='text-3xl underline'>Game</h1>
             {counter > 0 ? (
                 <h2 className='text-4xl'>Game starts in {counter}</h2>
-            ) : (
+            ) : ownPlayer &&
+              players &&
+              questions.normalQuestion !== undefined &&
+              questions.imposterQuestion !== undefined &&
+              socket ? (
                 <>
                     <QuestionCard
                         question={
-                            ownPlayer?.imposter
-                                ? questions?.imposterQuestion
-                                : questions?.normalQuestion
+                            ownPlayer.imposter
+                                ? questions.imposterQuestion
+                                : questions.normalQuestion
                         }
                     />
                     <ChoosePlayer players={players} socket={socket} />
                 </>
+            ) : (
+                <h1 className='text-3xl underline'>Loading...</h1>
             )}
         </div>
     );
