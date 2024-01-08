@@ -71,10 +71,7 @@ const NewGame = () => {
             });
 
             return () => {
-                socket.off('updateLobby');
-                socket.off('playerInfo');
-                socket.off('gameStarted');
-                socket.off('disconnect');
+                socket.removeAllListeners();
             };
         }
     }, [

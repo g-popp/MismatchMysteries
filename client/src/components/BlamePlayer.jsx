@@ -44,8 +44,7 @@ const BlamePlayer = ({ players }) => {
             });
 
             return () => {
-                socket.off('allPlayersBlamed');
-                socket.off('revealPhaseStarted');
+                socket.removeAllListeners();
             };
         }
     }, [allPlayersChosen, navigate, ownPlayer, socket]);

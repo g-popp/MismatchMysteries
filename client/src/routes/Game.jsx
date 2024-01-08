@@ -34,8 +34,7 @@ const Game = () => {
             });
 
             return () => {
-                socket.off('updateLobby');
-                socket.off('questions');
+                socket.removeAllListeners();
             };
         }
     }, [setPlayers, socket, setOwnPlayer, ownPlayer, setQuestions]);
