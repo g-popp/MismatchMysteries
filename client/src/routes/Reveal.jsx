@@ -2,10 +2,10 @@ import { useAtom } from 'jotai';
 import { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '../components/Button';
+import QuestionCard from '../components/QuestionCard';
 import { SocketContext } from '../context/socket';
 import { gameIdAtom } from '../store/game';
 import { allPlayersAtom, playerAtom } from '../store/players';
-import QuestionCard from '../components/QuestionCard';
 import { questionsAtom } from '../store/questions';
 
 const Reveal = () => {
@@ -42,11 +42,13 @@ const Reveal = () => {
 
         if (socket) {
             socket.on('revealResult', result => {
-                setYouWon(
-                    result === 'imposterWon'
-                        ? ownPlayer.imposter
-                        : !ownPlayer.imposter
-                );
+                if (result === 'imposterWon' && ownPlayer?.imposter) {
+                    setYouWon(true);
+                } else if (result === 'defaultsWon' && !ownPlayer?.imposter) {
+                    setYouWon(true);
+                } else {
+                    setYouWon(false);
+                }
             });
 
             socket.on('nextRoundStarted', () => {
@@ -58,7 +60,7 @@ const Reveal = () => {
                 socket.off('nextRoundStarted');
             };
         }
-    }, [allPlayers, gameId, navigate, ownPlayer, socket, youWon]);
+    }, [allPlayers, gameId, imposter, navigate, ownPlayer, socket, youWon]);
 
     return (
         <div className='flex flex-col gap-20 items-center'>
