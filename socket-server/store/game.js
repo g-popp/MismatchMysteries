@@ -3,14 +3,21 @@ import { getRoom, getUser } from './rooms.js';
 const playerChoices = [];
 const playerBlames = [];
 
-const addPlayerChoice = (playerId, playerChoice) => {
+const updatePlayerChoice = (playerId, playerChoice) => {
     const ownPlayer = getUser(playerId);
     const chosenPlayer = getUser(playerChoice);
 
-    if (ownPlayer && chosenPlayer) {
-        playerChoices.push({ chooser: ownPlayer, chosen: chosenPlayer });
+    // Check if player has already chosen
+    const playerHasChosen = playerChoices.find(
+        choice => choice.chooser.id === ownPlayer.id
+    );
+
+    if (!ownPlayer || !chosenPlayer) return { error: 'Player not found' };
+
+    if (playerHasChosen) {
+        playerHasChosen.chosen = chosenPlayer;
     } else {
-        return { error: 'Player not found' };
+        playerChoices.push({ chooser: ownPlayer, chosen: chosenPlayer });
     }
 
     return { playerChoices };
@@ -49,14 +56,21 @@ const haveAllPlayersChosen = roomId => {
     }
 };
 
-const addPlayerBlame = (playerId, playerChoice) => {
+const updatedPlayerBlame = (playerId, playerChoice) => {
     const ownPlayer = getUser(playerId);
     const chosenPlayer = getUser(playerChoice);
 
-    if (ownPlayer && chosenPlayer) {
-        playerBlames.push({ chooser: ownPlayer, chosen: chosenPlayer });
+    // check if player has already blamed
+    const playerHasBlamed = playerBlames.find(
+        choice => choice.chooser.id === ownPlayer.id
+    );
+
+    if (!ownPlayer || !chosenPlayer) return { error: 'Player not found' };
+
+    if (playerHasBlamed) {
+        playerHasBlamed.chosen = chosenPlayer;
     } else {
-        return { error: 'Player not found' };
+        playerBlames.push({ chooser: ownPlayer, chosen: chosenPlayer });
     }
 
     return { playerBlames };
@@ -143,12 +157,12 @@ const clearForNewGame = roomId => {
 };
 
 export {
-    addPlayerBlame,
-    addPlayerChoice,
     clearForNewGame,
     getMostCommonBlame,
     getPlayerChoices,
     haveAllPlayersBlamed,
     haveAllPlayersChosen,
-    revealMismatch
+    revealMismatch,
+    updatePlayerChoice,
+    updatedPlayerBlame
 };
