@@ -75,15 +75,14 @@ const NewGame = () => {
             };
         }
     }, [
+        socket,
         gameId,
         isGameRunning,
+        ownPlayer,
+        players,
         name,
         navigate,
-        ownPlayer,
-        setGameOptions,
-        setOwnPlayer,
-        setPlayers,
-        socket
+        gameOptions
     ]);
 
     const leaveLobby = () => {

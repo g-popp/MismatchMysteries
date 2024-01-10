@@ -35,9 +35,6 @@ const Reveal = () => {
     }, [counter]);
 
     useEffect(() => {
-        console.log('allPlayers', allPlayers);
-        console.log('ownPlayer', ownPlayer);
-
         setImposter([...allPlayers, ownPlayer].find(player => player.imposter));
 
         if (socket) {
@@ -59,7 +56,7 @@ const Reveal = () => {
                 socket.removeAllListeners();
             };
         }
-    }, [allPlayers, gameId, imposter, navigate, ownPlayer, socket]);
+    }, [socket, imposter, allPlayers, ownPlayer, youWon, gameId, navigate]);
 
     return (
         <div className='flex flex-col gap-20 items-center'>

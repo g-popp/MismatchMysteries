@@ -76,13 +76,13 @@ const Home = () => {
 
             return () => socket.removeAllListeners();
         }
-    }, [navigate, setGameId, socket]);
+    }, [navigate, gameId, socket]);
 
     useEffect(() => {
         if (gameId) {
             setIsGameRunning(true);
         }
-    }, [gameId, setIsGameRunning]);
+    }, [gameId, isGameRunning]);
 
     return (
         <div className='flex flex-col p-8 items-center gap-8'>

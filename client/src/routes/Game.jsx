@@ -29,7 +29,6 @@ const Game = () => {
             });
 
             socket.on('questions', questions => {
-                console.log(questions);
                 setQuestions(questions);
             });
 
@@ -37,24 +36,20 @@ const Game = () => {
                 socket.removeAllListeners();
             };
         }
-    }, [setPlayers, socket, setOwnPlayer, ownPlayer, setQuestions]);
+    }, [socket, players, ownPlayer, questions]);
 
     return (
         <div className='flex flex-col gap-20 items-center'>
             <h1 className='text-3xl underline'>Game</h1>
             {counter > 0 ? (
                 <h2 className='text-4xl'>Game starts in {counter}</h2>
-            ) : ownPlayer &&
-              players &&
-              questions.normalQuestion !== undefined &&
-              questions.imposterQuestion !== undefined &&
-              socket ? (
+            ) : ownPlayer && players && questions && socket ? (
                 <>
                     <QuestionCard
                         question={
                             ownPlayer.imposter
-                                ? questions.imposterQuestion
-                                : questions.normalQuestion
+                                ? questions?.imposterQuestion
+                                : questions?.normalQuestion
                         }
                     />
                     <ChoosePlayer players={players} socket={socket} />
