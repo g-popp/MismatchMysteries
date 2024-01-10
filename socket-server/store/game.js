@@ -96,12 +96,12 @@ const haveAllPlayersBlamed = roomId => {
     }
 };
 
-const getMostCommonBlame = roomId => {
+const getMostCommonBlames = roomId => {
     const room = getRoom(roomId);
-    if (!room) return false;
+    if (!room) return console.log({ error: 'Room not found!' });
 
     const players = room.users;
-    if (!players) return false;
+    if (!players) return console.log({ error: 'Players not found' });
 
     const choices = playerBlames.map(choice => choice.chosen.id);
 
@@ -112,7 +112,7 @@ const getMostCommonBlame = roomId => {
             const count = choices.filter(player => player === choice).length;
             const player = players.find(player => player.id === choice);
 
-            return { ...player, count };
+            return { player, count };
         })
         .sort((a, b) => b.count - a.count);
 
@@ -120,7 +120,7 @@ const getMostCommonBlame = roomId => {
 };
 
 const revealMismatch = roomId => {
-    const sortedBlames = getMostCommonBlame(roomId);
+    const sortedBlames = getMostCommonBlames(roomId);
 
     const imposter = sortedBlames.find(player => player.imposter);
 
@@ -158,7 +158,6 @@ const clearForNewGame = roomId => {
 
 export {
     clearForNewGame,
-    getMostCommonBlame,
     getPlayerChoices,
     haveAllPlayersBlamed,
     haveAllPlayersChosen,
