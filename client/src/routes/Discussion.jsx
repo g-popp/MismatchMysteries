@@ -37,7 +37,7 @@ const Discussion = () => {
                 socket.removeAllListeners();
             };
         }
-    }, [navigate, socket, setPlayerChoices]);
+    }, [navigate, socket, playerChoices]);
 
     useEffect(() => {
         const timer =
