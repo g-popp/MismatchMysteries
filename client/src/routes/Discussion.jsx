@@ -56,9 +56,15 @@ const Discussion = () => {
                 <h1 className='text-2xl underline'>Discussion Phase</h1>
 
                 {counter > 0 ? (
-                    <h2 className='text-4xl text-center'>
-                        Discussion starts in {counter}
-                    </h2>
+                    <div className='flex flex-col justify-center gap-10 mt-6 text-center'>
+                        <h2 className='text-4xl'>
+                            Discussion starts in {counter}
+                        </h2>
+                        <h3 className='text-2xl max-w-md text-gray-400 opacity-80'>
+                            Now you can{' '}
+                            <span className='text-teal-600'>talk</span> again!
+                        </h3>
+                    </div>
                 ) : (
                     <>
                         {gameOptions.couchMode ? (
