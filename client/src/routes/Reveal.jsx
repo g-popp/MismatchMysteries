@@ -1,5 +1,5 @@
 import { useAtom } from 'jotai';
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from '../components/Button';
 import QuestionCard from '../components/QuestionCard';
@@ -19,7 +19,10 @@ const Reveal = () => {
     const [gameId] = useAtom(gameIdAtom);
 
     const [allPlayers] = useAtom(allPlayersAtom);
+
     const [ownPlayer] = useAtom(playerAtom);
+    const ownPlayerRef = useRef(ownPlayer);
+    ownPlayerRef.current = ownPlayer;
 
     const [imposter, setImposter] = useState(null);
 
@@ -36,27 +39,31 @@ const Reveal = () => {
 
     useEffect(() => {
         setImposter([...allPlayers, ownPlayer].find(player => player.imposter));
+    }, [allPlayers, ownPlayer]);
 
+    useEffect(() => {
         if (socket) {
-            socket.on('revealResult', result => {
-                if (result === 'imposterWon' && ownPlayer?.imposter) {
-                    setYouWon(true);
-                } else if (result === 'defaultsWon' && !ownPlayer?.imposter) {
-                    setYouWon(true);
-                } else {
-                    setYouWon(false);
+            const onRevealResult = result => {
+                if (result === 'imposterWon') {
+                    setYouWon(ownPlayer?.imposter);
+                } else if (result === 'defaultsWon') {
+                    setYouWon(!ownPlayer?.imposter);
                 }
-            });
+            };
 
-            socket.on('nextRoundStarted', () => {
+            const onNextRoundStarted = () => {
                 navigate(`/newGame/${gameId}`);
-            });
+            };
+
+            socket.on('revealResult', onRevealResult);
+            socket.on('nextRoundStarted', onNextRoundStarted);
 
             return () => {
-                socket.removeAllListeners();
+                socket.off('revealResult', onRevealResult);
+                socket.off('nextRoundStarted', onNextRoundStarted);
             };
         }
-    }, [socket, imposter, allPlayers, ownPlayer, youWon, gameId, navigate]);
+    }, [socket, ownPlayer, gameId, navigate]);
 
     return (
         <div className='flex flex-col gap-20 items-center'>
