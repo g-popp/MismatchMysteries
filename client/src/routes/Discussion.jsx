@@ -69,13 +69,17 @@ const Discussion = () => {
                             <VotingTable playerChoices={playerChoices} />
                         )}
 
-                        <div>
-                            <h2 className='text-2xl mb-4'>Real Question:</h2>
-                            <QuestionCard
-                                size={'small'}
-                                question={questions.normalQuestion}
-                            />
-                        </div>
+                        {questions && questions.normalQuestion && (
+                            <div>
+                                <h2 className='text-2xl mb-4'>
+                                    Real Question:
+                                </h2>
+                                <QuestionCard
+                                    size={'small'}
+                                    question={questions.normalQuestion}
+                                />
+                            </div>
+                        )}
                     </>
                 )}
             </div>
