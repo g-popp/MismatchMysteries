@@ -23,35 +23,39 @@ const Game = () => {
 
     useEffect(() => {
         if (socket) {
-            socket.on('updateLobby', players => {
+            const handleUpdateLobby = players => {
                 setOwnPlayer(players.find(player => player.id === socket.id));
                 setPlayers(players.filter(player => player.id !== socket.id));
-            });
+            };
 
-            socket.on('questions', questions => {
+            const handleQuestions = questions => {
                 setQuestions(questions);
-            });
+            };
+
+            socket.on('updateLobby', handleUpdateLobby);
+            socket.on('questions', handleQuestions);
 
             return () => {
-                socket.removeAllListeners();
+                socket.off('updateLobby', handleUpdateLobby);
+                socket.off('questions', handleQuestions);
             };
         }
-    }, [socket, players, ownPlayer, questions]);
+    }, []);
+
+    const gameReady = ownPlayer && players && questions && socket;
+    const gameCountdown = counter > 0;
+    const question = ownPlayer?.imposter
+        ? questions?.imposterQuestion
+        : questions?.normalQuestion;
 
     return (
         <div className='flex flex-col gap-20 items-center'>
             <h1 className='text-3xl underline'>Game</h1>
-            {counter > 0 ? (
-                <h2 className='text-4xl'>Game starts in {counter}</h2>
-            ) : ownPlayer && players && questions && socket ? (
+            {gameCountdown ? (
+                <h2 className='text-4xl'>Game starts in {counter}!</h2>
+            ) : gameReady ? (
                 <>
-                    <QuestionCard
-                        question={
-                            ownPlayer.imposter
-                                ? questions?.imposterQuestion
-                                : questions?.normalQuestion
-                        }
-                    />
+                    <QuestionCard question={question} />
                     <ChoosePlayer players={players} socket={socket} />
                 </>
             ) : (
