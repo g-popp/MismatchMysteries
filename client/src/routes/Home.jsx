@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import Button from '../components/Button';
 import Toast from '../components/Toast';
 import { SocketContext } from '../context/socket';
-import { gameIdAtom, isGameRunningAtom } from '../store/game';
+import { gameIdAtom, gameRoundAtom, isGameRunningAtom } from '../store/game';
 import { nameAtom } from '../store/name';
 
 const Home = () => {
@@ -13,6 +13,7 @@ const Home = () => {
     const navigate = useNavigate();
     const [name, setName] = useAtom(nameAtom);
     const [gameId, setGameId] = useAtom(gameIdAtom);
+    const [, setGameRound] = useAtom(gameRoundAtom);
     const [showToast, setShowToast] = useState(false);
     const [toastMessage, setToastMessage] = useState('');
     const [isGameRunning, setIsGameRunning] = useAtom(isGameRunningAtom);
@@ -68,6 +69,10 @@ const Home = () => {
     };
 
     useEffect(() => {
+        setGameRound(0);
+    }, [gameId]);
+
+    useEffect(() => {
         if (socket) {
             socket.on('lobbyCreated', roomId => {
                 setGameId(roomId);
@@ -76,7 +81,7 @@ const Home = () => {
 
             return () => socket.removeAllListeners();
         }
-    }, [navigate, gameId, socket]);
+    }, [navigate, setGameId, setGameRound, socket]);
 
     useEffect(() => {
         if (gameId) {

@@ -9,3 +9,5 @@ export const gameOptionsAtom = atom({
     couchMode: true,
     numberOfImposters: 1
 });
+
+export const gameRoundAtom = atom(0);
