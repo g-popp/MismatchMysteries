@@ -3,6 +3,7 @@ import { useContext, useEffect, useState } from 'react';
 import ChoosePlayer from '../components/ChoosePlayer';
 import QuestionCard from '../components/QuestionCard';
 import { SocketContext } from '../context/socket';
+import { gameRoundAtom } from '../store/game';
 import { allPlayersAtom, playerAtom } from '../store/players';
 import { questionsAtom } from '../store/questions';
 
@@ -11,8 +12,13 @@ const Game = () => {
     const [questions, setQuestions] = useAtom(questionsAtom);
     const [players, setPlayers] = useAtom(allPlayersAtom);
     const [ownPlayer, setOwnPlayer] = useAtom(playerAtom);
+    const [gameRound, setGameRound] = useAtom(gameRoundAtom);
 
     const [counter, setCounter] = useState(5);
+
+    useEffect(() => {
+        setGameRound(prev => prev + 1);
+    }, []);
 
     useEffect(() => {
         const timer =
@@ -50,7 +56,7 @@ const Game = () => {
 
     return (
         <div className='flex flex-col gap-20 items-center'>
-            <h1 className='text-3xl underline'>Game</h1>
+            <h1 className='text-3xl underline'>Game - Number {gameRound}</h1>
             {gameCountdown ? (
                 <h2 className='text-4xl'>Game starts in {counter}!</h2>
             ) : gameReady ? (
