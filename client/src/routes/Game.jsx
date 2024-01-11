@@ -58,7 +58,13 @@ const Game = () => {
         <div className='flex flex-col gap-20 items-center'>
             <h1 className='text-3xl underline'>Game - Number {gameRound}</h1>
             {gameCountdown ? (
-                <h2 className='text-4xl'>Game starts in {counter}!</h2>
+                <div className='flex flex-col justify-center gap-10 mt-6 text-center'>
+                    <h2 className='text-4xl'>Game starts in {counter}</h2>
+                    <h3 className='text-2xl max-w-md text-gray-400 opacity-80'>
+                        Please don't speak in this Phase or let someone see your{' '}
+                        <span className='text-teal-600'>Screen!</span>
+                    </h3>
+                </div>
             ) : gameReady ? (
                 <>
                     <QuestionCard question={question} />
