@@ -98,10 +98,10 @@ const haveAllPlayersBlamed = roomId => {
 
 const getMostCommonBlames = roomId => {
     const room = getRoom(roomId);
-    if (!room) return console.log({ error: 'Room not found!' });
+    if (!room) return { error: 'Room not found!' };
 
     const players = room.users;
-    if (!players) return console.log({ error: 'Players not found' });
+    if (!players) return { error: 'Players not found' };
 
     const choices = playerBlames.map(choice => choice.chosen.id);
 
@@ -112,7 +112,7 @@ const getMostCommonBlames = roomId => {
             const count = choices.filter(player => player === choice).length;
             const player = players.find(player => player.id === choice);
 
-            return { player, count };
+            return { ...player, count };
         })
         .sort((a, b) => b.count - a.count);
 
@@ -123,14 +123,13 @@ const revealMismatch = roomId => {
     const sortedBlames = getMostCommonBlames(roomId);
 
     const imposter = sortedBlames.find(player => player.imposter);
-
     const defaults = sortedBlames.filter(player => !player.imposter);
 
     if (!imposter) return 'imposterWon';
     if (defaults.length === 0) return 'defaultsWon';
 
     const highestNonImposterCount = defaults[0].count;
-    if (imposter.count > highestNonImposterCount) return 'imposterWon';
+    if (imposter.count <= highestNonImposterCount) return 'imposterWon';
 
     return 'defaultsWon';
 };
