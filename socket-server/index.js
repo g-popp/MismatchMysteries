@@ -11,6 +11,7 @@ import {
     updatePlayerChoice,
     updatedPlayerBlame
 } from './store/game.js';
+import { sendQuestions } from './store/questions.js';
 import {
     addRoom,
     addUserToRoom,
@@ -19,7 +20,6 @@ import {
     makeUserImposter,
     removeUserFromRoom
 } from './store/rooms.js';
-import getQuestions from './utils/getQuestions.js';
 
 const app = express();
 const server = createServer(app);
@@ -87,7 +87,14 @@ io.on('connection', socket => {
         io.to(roomId).emit('gameStarted', options);
         io.to(roomId).emit('updateLobby', room.users);
 
-        sendQuestions(roomId);
+        const questions = sendQuestions(roomId);
+
+        if (questions.error) {
+            socket.emit('error', questions.error);
+            return;
+        }
+
+        io.to(roomId).emit('questions', questions);
     });
 
     socket.on('choosePlayer', ({ playerId }) => {
@@ -176,16 +183,3 @@ io.on('connection', socket => {
 server.listen(PORT, () => {
     console.log('server running on port', PORT);
 });
-
-const sendQuestions = roomId => {
-    const room = getRoom(roomId);
-
-    if (!room) return;
-
-    const normalQuestion = getQuestions()[0];
-    const imposterQuestion = getQuestions()[1];
-
-    if (!normalQuestion || !imposterQuestion) return;
-
-    io.to(roomId).emit('questions', { normalQuestion, imposterQuestion });
-};
