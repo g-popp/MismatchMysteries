@@ -127,11 +127,10 @@ const revealMismatch = roomId => {
     const defaults = sortedBlames.filter(player => !player.imposter);
 
     if (!imposter) return 'imposterWon';
-    if (!defaults) return 'defaultsWon';
+    if (defaults.length === 0) return 'defaultsWon';
 
-    if (imposter.count <= defaults[0].count) {
-        return 'imposterWon';
-    }
+    const highestNonImposterCount = defaults[0].count;
+    if (imposter.count > highestNonImposterCount) return 'imposterWon';
 
     return 'defaultsWon';
 };
