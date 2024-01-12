@@ -1,109 +1,43 @@
 /* eslint-disable react/prop-types */
+import { colors } from '../constants/colors';
+
 const VotingTable = ({ playerChoices }) => {
-    const tableContainer = {
-        border: '1px solid white',
-        borderRadius: '10px',
-        padding: '10px'
-    };
+    const commonStyles = 'border-2 border-black px-10 py-5 text-center';
 
-    const table = {
-        borderCollapse: 'collapse',
-        width: '100%'
-    };
-
-    const columnHeaderStyle = {
-        border: '2px solid black',
-        paddingLeft: '40px',
-        paddingRight: '40px',
-        paddingTop: '20px',
-        paddingBottom: '20px',
-
-        textAlign: 'center'
-    };
-
-    const rowHeader = ['rgb(33, 33, 33,0.9)'];
-
-    const boldText = {
-        fontWeight: 'bold'
-    };
-
-    const columnInputs = {
-        textAlign: 'center',
-        color: 'black',
-        borderRadius: '8px'
-    };
-
-    const separatorStyleRight = {
-        borderRight: '2px solid black'
-    };
-
-    const separatorStyleBottom = {
-        borderBottom: '2px solid black'
-    };
-
-    const rowColors = [
-        'rgba(255, 253, 130, 0.9',
-        'rgba(255, 155, 113, 0.9)',
-        'rgba(27, 153, 139, 0.9)',
-        'rgba(232, 72, 85, 0.9)'
-    ];
+    if (playerChoices.length === 0) return <p>Loading...</p>;
 
     return (
         <h1 className='text-xl'>
-            {playerChoices ? (
-                <div
-                    className='border rounded-lg padding 10px'
-                    style={tableContainer}
-                >
-                    <table style={table}>
-                        <thead>
-                            <tr style={{ backgroundColor: rowHeader }}>
-                                <th
-                                    style={{
-                                        ...columnHeaderStyle,
-                                        ...separatorStyleRight
-                                    }}
-                                >
-                                    Player
-                                </th>
-                                <th style={columnHeaderStyle}>Choices</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {playerChoices.map((choice, index) => (
+            <div className='border border-white rounded-lg p-2'>
+                <table className='border-collapse w-full'>
+                    <thead>
+                        <tr className='bg-gray-800'>
+                            <th className={commonStyles}>Player</th>
+                            <th className={commonStyles}>Choices</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {playerChoices.map((choice, index) => {
+                            return (
                                 <tr
                                     key={choice.chooser.id}
                                     style={{
                                         backgroundColor:
-                                            rowColors[index % rowColors.length]
+                                            colors[`rowColor-${index % 4}`]
                                     }}
                                 >
-                                    <td
-                                        style={{
-                                            ...columnInputs,
-                                            ...separatorStyleRight,
-                                            ...separatorStyleBottom,
-                                            ...boldText
-                                        }}
-                                    >
+                                    <td className='text-center text-black border-r-2 border-b-2 border-l-2 border-black font-bold'>
                                         {choice.chooser.name}
                                     </td>
-                                    <td
-                                        style={{
-                                            ...columnInputs,
-                                            ...separatorStyleBottom
-                                        }}
-                                    >
+                                    <td className='text-center text-black border-b-2 border-r-2 border-black'>
                                         {choice.chosen.name}
                                     </td>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            ) : (
-                <p>Error</p>
-            )}
+                            );
+                        })}
+                    </tbody>
+                </table>
+            </div>
         </h1>
     );
 };
