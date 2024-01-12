@@ -1,3 +1,4 @@
+import cors from 'cors';
 import express from 'express';
 import { createServer } from 'node:http';
 import ShortUniqueId from 'short-unique-id';
@@ -24,6 +25,8 @@ import {
 const app = express();
 const server = createServer(app);
 const PORT = process.env.PORT || 4000;
+
+app.use(cors());
 
 const io = new Server(server, {
     cors: {
