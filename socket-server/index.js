@@ -31,7 +31,10 @@ const io = new Server(server, {
     }
 });
 
-const { randomUUID } = new ShortUniqueId({ length: 8 });
+const { randomUUID } = new ShortUniqueId({
+    length: 8,
+    dictionary: 'alphanum_lower'
+});
 
 io.on('connection', socket => {
     console.log('New client connected', socket.id);
