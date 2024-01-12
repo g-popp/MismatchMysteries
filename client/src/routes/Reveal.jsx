@@ -48,28 +48,29 @@ const Reveal = () => {
     }, [allPlayers, ownPlayer]);
 
     useEffect(() => {
-        if (socket) {
-            const onRevealResult = result => {
+        const onRevealResult = result => {
+            setYouWon(prevYouWon => {
                 if (result === 'defaultsWon') {
-                    setYouWon(!ownPlayerRef.current.imposter);
+                    return !ownPlayerRef.current.imposter;
                 } else if (result === 'imposterWon') {
-                    setYouWon(ownPlayerRef.current.imposter);
+                    return ownPlayerRef.current.imposter;
                 }
-            };
+                return prevYouWon;
+            });
+        };
 
-            const onNextRoundStarted = () => {
-                navigate(`/newGame/${gameId}`);
-            };
+        const onNextRoundStarted = () => {
+            navigate(`/newGame/${gameId}`);
+        };
 
-            socket.on('revealResult', onRevealResult);
-            socket.on('nextRoundStarted', onNextRoundStarted);
+        socket.on('revealResult', onRevealResult);
+        socket.on('nextRoundStarted', onNextRoundStarted);
 
-            return () => {
-                socket.off('revealResult', onRevealResult);
-                socket.off('nextRoundStarted', onNextRoundStarted);
-            };
-        }
-    }, [socket, ownPlayerRef.current, gameId, navigate]);
+        return () => {
+            socket.off('revealResult', onRevealResult);
+            socket.off('nextRoundStarted', onNextRoundStarted);
+        };
+    }, []);
 
     const revealCountdown = counter > 0;
     const revealText = youWon ? 'You won!' : 'You lost!';
