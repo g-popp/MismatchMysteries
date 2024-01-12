@@ -1,11 +1,16 @@
 import { useAtom } from 'jotai';
 import { useContext, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import BlamedPlayerDisplay from '../components/BlamedPlayerDisplay';
 import Button from '../components/Button';
 import QuestionCard from '../components/QuestionCard';
 import { SocketContext } from '../context/socket';
 import { gameIdAtom } from '../store/game';
-import { allPlayersAtom, playerAtom } from '../store/players';
+import {
+    allPlayersAtom,
+    playerAtom,
+    selectedPlayerAtom
+} from '../store/players';
 import { questionsAtom } from '../store/questions';
 
 const Reveal = () => {
@@ -17,6 +22,7 @@ const Reveal = () => {
     const [counter, setCounter] = useState(5);
     const [youWon, setYouWon] = useState(false);
     const [gameId] = useAtom(gameIdAtom);
+    const [selectedPlayer] = useAtom(selectedPlayerAtom);
 
     const [allPlayers] = useAtom(allPlayersAtom);
 
@@ -101,6 +107,9 @@ const Reveal = () => {
                             question={questions.imposterQuestion}
                         />
                     </div>
+                    <BlamedPlayerDisplay
+                        blamedPlayerName={selectedPlayer.name}
+                    />
                     {nextGameButton}
                 </>
             )}
