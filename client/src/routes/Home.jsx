@@ -4,23 +4,18 @@ import { useNavigate } from 'react-router-dom';
 import Button from '../components/Button';
 import Toast from '../components/Toast';
 import { SocketContext } from '../context/socket';
-import { gameIdAtom, gameRoundAtom, isGameRunningAtom } from '../store/game';
-import { nameAtom } from '../store/name';
+import { playerAtom } from '../store/players';
+import { roomAtom } from '../store/room';
 
 const Home = () => {
     const socket = useContext(SocketContext);
 
     const navigate = useNavigate();
-    const [name, setName] = useAtom(nameAtom);
-    const [gameId, setGameId] = useAtom(gameIdAtom);
-    const [, setGameRound] = useAtom(gameRoundAtom);
+    const [ownPlayer, setOwnPlayer] = useAtom(playerAtom);
+    const [, setRoom] = useAtom(roomAtom);
+
     const [showToast, setShowToast] = useState(false);
     const [toastMessage, setToastMessage] = useState('');
-    const [isGameRunning, setIsGameRunning] = useAtom(isGameRunningAtom);
-
-    const createLobby = () => {
-        socket && socket.emit('createLobby');
-    };
 
     const setToastError = () => {
         setToastMessage('Name is missing');
@@ -30,17 +25,17 @@ const Home = () => {
     const handleNewGame = e => {
         e.preventDefault();
 
-        if (!name) {
+        if (!ownPlayer.name) {
             return setToastError();
         }
 
-        createLobby();
+        socket.emit('createLobby', ownPlayer.name);
     };
 
     const handleJoinLobby = e => {
         e.preventDefault();
 
-        if (!name) {
+        if (!ownPlayer.name) {
             return setToastError();
         }
 
@@ -50,44 +45,63 @@ const Home = () => {
     const resumeGame = e => {
         e.preventDefault();
 
-        if (!name) {
+        if (!ownPlayer.name) {
             return setToastError();
         }
 
-        navigate(`/newGame/${gameId}`);
+        navigate(`/newGame/${ownPlayer.state.roomId}`);
     };
 
     const leaveGame = e => {
         e.preventDefault();
 
-        socket.emit('leaveLobby', { roomId: gameId });
-        console.log('Leave');
+        socket.emit('leaveLobby', ownPlayer.state.roomId);
 
-        setGameId('');
-        setIsGameRunning(false);
+        setOwnPlayer(prev => ({
+            ...prev,
+            state: {
+                ...prev.state,
+                roomId: undefined,
+                isHost: false
+            }
+        }));
+
+        setRoom({
+            id: undefined,
+            users: [],
+            isGameRunning: false,
+            round: 0
+        });
+
         navigate('/');
     };
 
     useEffect(() => {
-        setGameRound(0);
-    }, [gameId]);
-
-    useEffect(() => {
         if (socket) {
-            socket.on('lobbyCreated', roomId => {
-                setGameId(roomId);
-                navigate(`/newGame/${roomId}`);
+            socket.on('lobbyCreated', room => {
+                setOwnPlayer(prev => ({
+                    ...prev,
+                    state: {
+                        ...prev.state,
+                        roomId: room.id,
+                        isHost: true
+                    }
+                }));
+                setRoom(room);
+
+                navigate(`/newGame/${room.id}`);
             });
 
-            return () => socket.removeAllListeners();
-        }
-    }, [navigate, setGameId, setGameRound, socket]);
+            socket.on('error', message => {
+                console.error(message);
+            });
 
-    useEffect(() => {
-        if (gameId) {
-            setIsGameRunning(true);
+            return () => {
+                socket.off('lobbyCreated');
+                socket.off('error');
+            };
         }
-    }, [gameId, isGameRunning]);
+    }, [socket]);
 
     return (
         <div className='flex flex-col p-8 items-center gap-8'>
@@ -99,10 +113,12 @@ const Home = () => {
                 <div className='relative h-12 w-full min-w-[200px]'>
                     <input
                         placeholder='...'
-                        value={name}
+                        value={ownPlayer.name}
                         form='username'
                         className='peer h-full w-full border-b border-blue-gray-200 bg-transparent pt-4 pb-1.5 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border-blue-gray-200 focus:border-[#1B998B] focus:outline-0 disabled:border-0 disabled:bg-blue-gray-50'
-                        onChange={e => setName(e.target.value)}
+                        onChange={e =>
+                            setOwnPlayer({ ...ownPlayer, name: e.target.value })
+                        }
                     />
                     <label
                         name='username'
@@ -113,7 +129,7 @@ const Home = () => {
                 </div>
             </div>
             <div className='flex flex-col gap-14'>
-                {!isGameRunning ? (
+                {!ownPlayer.state.roomId ? (
                     <>
                         <Button color='#1B998B' handler={e => handleNewGame(e)}>
                             Start New Game
