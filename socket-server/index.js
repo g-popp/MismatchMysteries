@@ -51,6 +51,7 @@ const { randomUUID: generateRoomId } = new ShortUniqueId({
 const onCreateLobby = (socket, uuid, name) => {
     const roomId = generateRoomId();
     rooms[roomId] = {
+        id: roomId,
         users: [],
         round: 0,
         isGameRunning: false
@@ -68,9 +69,7 @@ const onCreateLobby = (socket, uuid, name) => {
 
     socket.join(roomId);
 
-    console.log(users);
-
-    socket.emit('lobbyCreated', roomId);
+    socket.emit('lobbyCreated', rooms[roomId]);
 };
 
 // TODO: remove logic from client to remove this function
@@ -82,7 +81,7 @@ const onCheckRoom = (socket, roomId) => {
     socket.emit('roomExists', false);
 };
 
-const onJoinLobby = (socket, roomId, name, uuid) => {
+const onJoinLobby = (socket, roomId, name, userId) => {
     // 1. Check if room exists
     if (!rooms[roomId]) {
         socket.emit('error', 'Room does not exist');
@@ -93,7 +92,7 @@ const onJoinLobby = (socket, roomId, name, uuid) => {
     const isHost = rooms[roomId].users.find(user => user.host);
 
     // 3. Store the user
-    const user = users[uuid];
+    const user = users[userId];
     user.name = name;
     user.state = {
         roomId: roomId,
@@ -118,15 +117,37 @@ const onRefreshLobby = (socket, roomId) => {
     io.to(roomId).emit('updateLobby', rooms[roomId].users);
 };
 
+// TODO: add game running check
+const onLeaveLobby = (socket, roomId, userId) => {
+    console.log(`User ${users[userId].name} left room ${roomId}`);
+
+    const room = rooms[roomId];
+    if (!room) return;
+
+    const user = users[userId];
+    if (!user) return;
+
+    const newUserList = room.users.filter(() => {
+        users[userId].name !== user.name;
+    });
+
+    room.users = newUserList;
+    rooms[roomId] = room;
+
+    socket.leave(roomId);
+
+    io.to(roomId).emit('updateLobby', rooms[roomId]);
+};
+
 io.on('connection', socket => {
     // Generate a new User ID
-    const uuid = uuidv4();
+    const userId = uuidv4();
 
     // Store the new connection
-    connections[uuid] = socket;
+    connections[userId] = socket;
 
     // Store User
-    users[uuid] = {
+    users[userId] = {
         name: undefined,
         state: {
             roomId: undefined,
@@ -139,31 +160,19 @@ io.on('connection', socket => {
         }
     };
 
-    console.log('New client connected', uuid);
+    console.log('New client connected', userId);
 
-    socket.on('createLobby', name => onCreateLobby(socket, uuid, name));
+    socket.on('createLobby', name => onCreateLobby(socket, userId, name));
 
     socket.on('checkRoom', roomId => onCheckRoom(socket, roomId));
 
     socket.on('joinLobby', ({ roomId, name }) =>
-        onJoinLobby(socket, roomId, name, uuid)
+        onJoinLobby(socket, roomId, name, userId)
     );
 
     socket.on('refreshLobby', ({ roomId }) => onRefreshLobby(socket, roomId));
 
-    socket.on('leaveLobby', ({ roomId }) => {
-        const room = getRoom(roomId);
-
-        const users = room?.users;
-
-        const newUserList = removeUserFromRoom(socket.id);
-
-        socket.leave(roomId);
-
-        if (!users) return;
-
-        io.to(roomId).emit('updateLobby', newUserList);
-    });
+    socket.on('leaveLobby', roomId => onLeaveLobby(socket, roomId, userId));
 
     socket.on('startGame', async ({ roomId, options }) => {
         makeUserImposter(roomId);
