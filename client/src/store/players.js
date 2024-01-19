@@ -1,7 +1,14 @@
 import { atom } from 'jotai';
 
-export const playerAtom = atom({});
-
-export const selectedPlayerAtom = atom();
-
-export const allPlayersAtom = atom([]);
+export const playerAtom = atom({
+    name: undefined,
+    state: {
+        roomId: undefined,
+        isHost: false,
+        isImposter: false,
+        hasChosen: false,
+        hasBlamed: false,
+        choice: undefined,
+        blame: undefined
+    }
+});
