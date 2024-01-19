@@ -3,7 +3,6 @@ import express from 'express';
 import { createServer } from 'node:http';
 import ShortUniqueId from 'short-unique-id';
 import { Server } from 'socket.io';
-import { v4 as uuidv4 } from 'uuid';
 import {
     clearForNewGame,
     getPlayerChoices,
@@ -15,6 +14,8 @@ import {
 } from './store/game.js';
 import { sendQuestions } from './store/questions.js';
 import {
+    addRoom,
+    addUserToRoom,
     getRoom,
     getRoomFromUser,
     makeUserImposter,
@@ -30,126 +31,45 @@ app.use(cors());
 const io = new Server(server, {
     cors: {
         origin: '*'
-    },
-    transports: ['polling', 'websocket'],
-    connectionStateRecovery: {
-        maxDisconnectionDuration: 2 * 60 * 1000
     }
 });
 
-const connections = {};
-const users = {};
-const rooms = {};
-
-const { randomUUID: generateRoomId } = new ShortUniqueId({
+const { randomUUID } = new ShortUniqueId({
     length: 8,
     dictionary: 'alphanum_lower'
 });
 
-/// Handler
-
-const onCreateLobby = (socket, uuid, name) => {
-    const roomId = generateRoomId();
-    rooms[roomId] = {
-        users: [],
-        round: 0,
-        isGameRunning: false
-    };
-
-    users[uuid] = {
-        name: name,
-        state: {
-            roomId: roomId,
-            isHost: true
-        }
-    };
-
-    rooms[roomId].users.push(users[uuid]);
-
-    socket.join(roomId);
-
-    console.log(users);
-
-    socket.emit('lobbyCreated', roomId);
-};
-
-// TODO: remove logic from client to remove this function
-const onCheckRoom = (socket, roomId) => {
-    if (rooms[roomId]) {
-        socket.emit('roomExists', true);
-    }
-
-    socket.emit('roomExists', false);
-};
-
-const onJoinLobby = (socket, roomId, name, uuid) => {
-    // 1. Check if room exists
-    if (!rooms[roomId]) {
-        socket.emit('error', 'Room does not exist');
-        return;
-    }
-
-    // 2. Check if a user is host
-    const isHost = rooms[roomId].users.find(user => user.host);
-
-    // 3. Store the user
-    const user = users[uuid];
-    user.name = name;
-    user.state = {
-        roomId: roomId,
-        isHost: !isHost
-    };
-
-    // 4. Add user to room
-    rooms[roomId].users.push(user);
-    socket.join(roomId);
-
-    console.log('user', user);
-
-    // 5. Send user info to client
-    socket.emit('playerInfo', user);
-
-    // TODO: send whole room to client
-    // 6. Send updated lobby to all clients
-    io.to(roomId).emit('updateLobby', rooms[roomId].users);
-};
-
-const onRefreshLobby = (socket, roomId) => {
-    io.to(roomId).emit('updateLobby', rooms[roomId].users);
-};
-
 io.on('connection', socket => {
-    // Generate a new User ID
-    const uuid = uuidv4();
+    console.log('New client connected', socket.id);
 
-    // Store the new connection
-    connections[uuid] = socket;
+    socket.on('createLobby', () => {
+        const room = addRoom({ id: randomUUID() });
+        socket.emit('lobbyCreated', room.id);
+    });
 
-    // Store User
-    users[uuid] = {
-        name: undefined,
-        state: {
-            roomId: undefined,
-            isHost: false,
-            isImposter: false,
-            hasChosen: false,
-            hasBlamed: false,
-            choice: undefined,
-            blame: undefined
+    socket.on('checkRoom', roomId => {
+        const room = getRoom(roomId);
+        const roomExists = room;
+        socket.emit('roomExists', roomExists);
+    });
+
+    socket.on('joinLobby', ({ roomId, name }) => {
+        const user = addUserToRoom({ roomId, name, id: socket.id });
+
+        if (user.error) {
+            socket.emit('error', user.error);
+            return;
         }
-    };
 
-    console.log('New client connected', uuid);
+        socket.join(roomId);
+        socket.emit('playerInfo', user.user);
 
-    socket.on('createLobby', name => onCreateLobby(socket, uuid, name));
+        io.to(roomId).emit('updateLobby', getRoom(roomId).users);
+    });
 
-    socket.on('checkRoom', roomId => onCheckRoom(socket, roomId));
-
-    socket.on('joinLobby', ({ roomId, name }) =>
-        onJoinLobby(socket, roomId, name, uuid)
-    );
-
-    socket.on('refreshLobby', ({ roomId }) => onRefreshLobby(socket, roomId));
+    socket.on('refreshLobby', ({ roomId }) => {
+        io.to(roomId).emit('updateLobby', getRoom(roomId).users);
+    });
 
     socket.on('leaveLobby', ({ roomId }) => {
         const room = getRoom(roomId);
@@ -165,7 +85,7 @@ io.on('connection', socket => {
         io.to(roomId).emit('updateLobby', newUserList);
     });
 
-    socket.on('startGame', async ({ roomId, options }) => {
+    socket.on('startGame', ({ roomId, options }) => {
         makeUserImposter(roomId);
 
         const room = getRoom(roomId);
@@ -180,7 +100,7 @@ io.on('connection', socket => {
             return;
         }
 
-        await io.to(roomId).emit('questions', questions);
+        io.to(roomId).emit('questions', questions);
     });
 
     socket.on('choosePlayer', ({ playerId }) => {
