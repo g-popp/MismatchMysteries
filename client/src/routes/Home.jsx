@@ -6,6 +6,7 @@ import Toast from '../components/Toast';
 import { SocketContext } from '../context/socket';
 import { playerAtom } from '../store/players';
 import { roomAtom } from '../store/room';
+import { leaveLobby } from '../store/utils/leaveLobby';
 
 const Home = () => {
     const socket = useContext(SocketContext);
@@ -42,36 +43,20 @@ const Home = () => {
         navigate('/join');
     };
 
-    const resumeGame = e => {
+    const handleResumeGame = e => {
         e.preventDefault();
 
         if (!ownPlayer.name) {
             return setToastError();
         }
 
-        navigate(`/newGame/${ownPlayer.state.roomId}`);
+        navigate(`/lobby/${ownPlayer.state.roomId}`);
     };
 
-    const leaveGame = e => {
+    const handleLeaveLobby = e => {
         e.preventDefault();
 
-        socket.emit('leaveLobby', ownPlayer.state.roomId);
-
-        setOwnPlayer(prev => ({
-            ...prev,
-            state: {
-                ...prev.state,
-                roomId: undefined,
-                isHost: false
-            }
-        }));
-
-        setRoom({
-            id: undefined,
-            users: [],
-            isGameRunning: false,
-            round: 0
-        });
+        leaveLobby(socket, ownPlayer.id, setOwnPlayer, setRoom);
 
         navigate('/');
     };
@@ -89,7 +74,9 @@ const Home = () => {
                 }));
                 setRoom(room);
 
-                navigate(`/newGame/${room.id}`);
+                socket.on('playerInfo', player => setOwnPlayer(player));
+
+                navigate(`/lobby/${room.id}`);
             });
 
             socket.on('error', message => {
@@ -98,6 +85,7 @@ const Home = () => {
 
             return () => {
                 socket.off('lobbyCreated');
+                socket.off('playerInfo');
                 socket.off('error');
             };
         }
@@ -143,10 +131,16 @@ const Home = () => {
                     </>
                 ) : (
                     <>
-                        <Button color='#1B998B' handler={e => resumeGame(e)}>
+                        <Button
+                            color='#1B998B'
+                            handler={e => handleResumeGame(e)}
+                        >
                             Resume Game
                         </Button>
-                        <Button color='#E84855' handler={e => leaveGame(e)}>
+                        <Button
+                            color='#E84855'
+                            handler={e => handleLeaveLobby(e)}
+                        >
                             Leave
                         </Button>
                     </>
