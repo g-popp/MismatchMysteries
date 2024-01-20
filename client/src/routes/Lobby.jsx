@@ -9,20 +9,18 @@ import PlayerCard from '../components/PlayerCard';
 import SettingsModal from '../components/SettingsModal';
 import Toast from '../components/Toast';
 import { SocketContext } from '../context/socket';
-import { gameIdAtom, gameOptionsAtom, isGameRunningAtom } from '../store/game';
-import { nameAtom } from '../store/name';
-import { allPlayersAtom, playerAtom } from '../store/players';
+import { gameOptionsAtom } from '../store/game.old';
+import { playerAtom } from '../store/players';
+import { roomAtom } from '../store/room';
 
-const NewGame = () => {
+const Lobby = () => {
     const socket = useContext(SocketContext);
     const navigate = useNavigate();
 
-    const [name] = useAtom(nameAtom);
-    const [gameId, setGameId] = useAtom(gameIdAtom);
-    const [players, setPlayers] = useAtom(allPlayersAtom);
+    const [room, setRoom] = useAtom(roomAtom);
+
     const [ownPlayer, setOwnPlayer] = useAtom(playerAtom);
-    const [isGameRunning] = useAtom(isGameRunningAtom);
-    const [gameOptions, setGameOptions] = useAtom(gameOptionsAtom);
+    const [gameOptions] = useAtom(gameOptionsAtom);
 
     const [showToast, setShowToast] = useState(false);
     const [toastType, setToastType] = useState('');
@@ -33,62 +31,64 @@ const NewGame = () => {
     const [parent] = useAutoAnimate();
 
     const copyIdToClipboard = () => {
-        clipboardCopy(gameId);
+        clipboardCopy(room.id);
         setToastMessage('Game ID copied');
         setToastType('default');
         setShowToast(true);
         setTimeout(() => setShowToast(false), 2000);
     };
 
+    const players = room.users.filter(user => user.id !== ownPlayer.id);
+    const roomId = room.id;
+
     useEffect(() => {
-        if (gameId && socket) {
-            !isGameRunning
-                ? socket.emit('joinLobby', { roomId: gameId, name: name })
-                : socket.emit('refreshLobby', { roomId: gameId });
+        if (socket) {
+            // socket.emit('joinLobby', { roomId: gameId, name: name })
+            // socket.emit('refreshLobby', { roomId: gameId });
 
             socket.on('error', error => {
                 console.log(error);
             });
 
-            socket.on('updateLobby', players => {
-                setOwnPlayer(players.find(player => player.id === socket.id));
-                setPlayers(players.filter(player => player.id !== socket.id));
+            socket.on('updateLobby', room => {
+                console.log(room);
             });
 
-            socket.on('playerInfo', player => {
-                setOwnPlayer(player);
-            });
+            // socket.on('updateLobby', players => {
+            //     setOwnPlayer(players.find(player => player.id === socket.id));
+            //     setPlayers(players.filter(player => player.id !== socket.id));
+            // });
 
-            socket.on('gameStarted', options => {
-                setGameOptions(options);
-                navigate(`/game/`);
-            });
+            // socket.on('playerInfo', player => {
+            //     setOwnPlayer(player);
+            // });
 
-            socket.on('disconnect', () => {
-                socket.on('updateLobby', players => {
-                    setPlayers(players);
-                });
-            });
+            // socket.on('gameStarted', options => {
+            //     setGameOptions(options);
+            //     navigate(`/game/`);
+            // });
+
+            // socket.on('disconnect', () => {
+            //     socket.on('updateLobby', players => {
+            //         setPlayers(players);
+            //     });
+            // });
 
             return () => {
-                socket.removeAllListeners();
+                socket.off('error');
             };
         }
-    }, [
-        socket,
-        gameId,
-        isGameRunning,
-        ownPlayer,
-        players,
-        name,
-        navigate,
-        gameOptions
-    ]);
+    }, [socket]);
 
-    const leaveLobby = () => {
-        socket && socket.emit('leaveLobby', { roomId: gameId });
+    const onLeaveLobby = e => {
+        e.preventDefault();
 
-        setGameId('');
+        socket.emit('leaveLobby', ownPlayer.id);
+
+        setOwnPlayer({ ...ownPlayer, state: { roomId: undefined } });
+
+        setRoom({ id: undefined, users: [] });
+
         navigate('/');
     };
 
@@ -102,7 +102,7 @@ const NewGame = () => {
 
         socket &&
             socket.emit('startGame', {
-                roomId: gameId,
+                roomId: roomId,
                 options: gameOptions
             });
     };
@@ -112,8 +112,8 @@ const NewGame = () => {
             <h1 className='text-3xl underline'>Game Lobby</h1>
 
             <IdCard
-                gameId={gameId}
-                host={ownPlayer.host}
+                gameId={room.id}
+                host={ownPlayer.state.isHost}
                 copyIdToClipboard={copyIdToClipboard}
                 openOptions={() => setShowOptions(true)}
             />
@@ -131,7 +131,7 @@ const NewGame = () => {
                 >
                     <PlayerCard
                         name={ownPlayer.name}
-                        host={ownPlayer.host}
+                        host={ownPlayer.state.isHost}
                         backgroundColor='#FFFD82'
                     />
                     {players.map(player => (
@@ -145,7 +145,7 @@ const NewGame = () => {
                 </ul>
             </div>
             <div className='flex flex-col gap-6'>
-                {ownPlayer.host && (
+                {ownPlayer.state.isHost && (
                     <Button
                         handler={startGame}
                         color='#1B998B'
@@ -155,7 +155,7 @@ const NewGame = () => {
                     </Button>
                 )}
 
-                <Button color='#E84855' handler={leaveLobby}>
+                <Button color='#E84855' handler={e => onLeaveLobby(e)}>
                     Leave
                 </Button>
             </div>
@@ -169,4 +169,4 @@ const NewGame = () => {
     );
 };
 
-export default NewGame;
+export default Lobby;

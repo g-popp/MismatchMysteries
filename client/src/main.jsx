@@ -12,7 +12,7 @@ import Blame from './routes/Blame.jsx';
 import Discussion from './routes/Discussion.jsx';
 import Game from './routes/Game.jsx';
 import Join from './routes/Join.jsx';
-import NewGame from './routes/NewGame.jsx';
+import Lobby from './routes/Lobby.jsx';
 import Reveal from './routes/Reveal.jsx';
 
 const router = createBrowserRouter([
@@ -25,8 +25,8 @@ const router = createBrowserRouter([
         element: <Layout />,
         children: [
             {
-                path: '/newGame/:id',
-                element: <NewGame />
+                path: '/lobby/:id',
+                element: <Lobby />
             },
             {
                 path: '/join',
