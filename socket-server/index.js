@@ -48,7 +48,7 @@ const { randomUUID: generateRoomId } = new ShortUniqueId({
 
 /// Handler
 
-const onCreateLobby = (socket, uuid, name) => {
+const onCreateLobby = (socket, userId, name) => {
     const roomId = generateRoomId();
     rooms[roomId] = {
         id: roomId,
@@ -57,28 +57,21 @@ const onCreateLobby = (socket, uuid, name) => {
         isGameRunning: false
     };
 
-    users[uuid] = {
+    users[userId] = {
         name: name,
+        id: userId,
         state: {
             roomId: roomId,
             isHost: true
         }
     };
 
-    rooms[roomId].users.push(users[uuid]);
+    rooms[roomId].users.push(users[userId]);
 
     socket.join(roomId);
 
     socket.emit('lobbyCreated', rooms[roomId]);
-};
-
-// TODO: remove logic from client to remove this function
-const onCheckRoom = (socket, roomId) => {
-    if (rooms[roomId]) {
-        socket.emit('roomExists', true);
-    }
-
-    socket.emit('roomExists', false);
+    socket.emit('playerInfo', users[userId]);
 };
 
 const onJoinLobby = (socket, roomId, name, userId) => {
@@ -103,14 +96,12 @@ const onJoinLobby = (socket, roomId, name, userId) => {
     rooms[roomId].users.push(user);
     socket.join(roomId);
 
-    console.log('user', user);
-
     // 5. Send user info to client
     socket.emit('playerInfo', user);
 
     // TODO: send whole room to client
     // 6. Send updated lobby to all clients
-    io.to(roomId).emit('updateLobby', rooms[roomId].users);
+    io.to(roomId).emit('updateLobby', rooms[roomId]);
 };
 
 const onRefreshLobby = (socket, roomId) => {
@@ -118,27 +109,25 @@ const onRefreshLobby = (socket, roomId) => {
 };
 
 // TODO: add game running check
-const onLeaveLobby = (socket, roomId, userId) => {
-    console.log(`User ${users[userId].name} left room ${roomId}`);
-
-    const room = rooms[roomId];
-    if (!room) return;
-
+const onLeaveLobby = (socket, userId) => {
     const user = users[userId];
     if (!user) return;
 
+    const room = rooms[user.state.roomId];
+    if (!room) return;
+
     const newUserList = room.users.filter(() => {
-        users[userId].name !== user.name;
+        return user.id !== userId;
     });
 
-    room.users = newUserList;
-    rooms[roomId] = room;
+    rooms[room.id].users = newUserList;
 
-    socket.leave(roomId);
+    socket.leave(room.id);
 
-    io.to(roomId).emit('updateLobby', rooms[roomId]);
+    io.to(room.id).emit('updateLobby', rooms[room.id]);
 };
 
+/// --- SOCKET --- ///
 io.on('connection', socket => {
     // Generate a new User ID
     const userId = uuidv4();
@@ -149,6 +138,7 @@ io.on('connection', socket => {
     // Store User
     users[userId] = {
         name: undefined,
+        id: userId,
         state: {
             roomId: undefined,
             isHost: false,
@@ -160,11 +150,16 @@ io.on('connection', socket => {
         }
     };
 
-    console.log('New client connected', userId);
-
     socket.on('createLobby', name => onCreateLobby(socket, userId, name));
 
-    socket.on('checkRoom', roomId => onCheckRoom(socket, roomId));
+    socket.on('checkRoom', (roomId, callback) => {
+        if (rooms[roomId]) {
+            callback(null);
+            return;
+        }
+
+        callback({ error: 'Room does not exist' });
+    });
 
     socket.on('joinLobby', ({ roomId, name }) =>
         onJoinLobby(socket, roomId, name, userId)
@@ -172,7 +167,9 @@ io.on('connection', socket => {
 
     socket.on('refreshLobby', ({ roomId }) => onRefreshLobby(socket, roomId));
 
-    socket.on('leaveLobby', roomId => onLeaveLobby(socket, roomId, userId));
+    socket.on('leaveLobby', userId => onLeaveLobby(socket, userId));
+
+    /// --- SEPERATOR --- ///
 
     socket.on('startGame', async ({ roomId, options }) => {
         makeUserImposter(roomId);
