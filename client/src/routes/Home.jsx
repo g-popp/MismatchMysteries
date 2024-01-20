@@ -6,17 +6,18 @@ import Toast from '../components/Toast';
 import { SocketContext } from '../context/socket';
 import { playerAtom } from '../store/players';
 import { roomAtom } from '../store/room';
-import { leaveLobby } from '../store/utils/leaveLobby';
 
 const Home = () => {
     const socket = useContext(SocketContext);
 
     const navigate = useNavigate();
     const [ownPlayer, setOwnPlayer] = useAtom(playerAtom);
-    const [, setRoom] = useAtom(roomAtom);
+    const [room, setRoom] = useAtom(roomAtom);
 
     const [showToast, setShowToast] = useState(false);
     const [toastMessage, setToastMessage] = useState('');
+
+    const [playerSet, setPlayerSet] = useState(false);
 
     const setToastError = () => {
         setToastMessage('Name is missing');
@@ -43,20 +44,25 @@ const Home = () => {
         navigate('/join');
     };
 
+    // TODO: implement resume game
     const handleResumeGame = e => {
         e.preventDefault();
 
-        if (!ownPlayer.name) {
-            return setToastError();
-        }
+        // if (!ownPlayer.name) {
+        //     return setToastError();
+        // }
 
-        navigate(`/lobby/${ownPlayer.state.roomId}`);
+        // navigate(`/lobby/${ownPlayer.state.roomId}`);
     };
 
     const handleLeaveLobby = e => {
         e.preventDefault();
 
-        leaveLobby(socket, ownPlayer.id, setOwnPlayer, setRoom);
+        socket.emit('leaveLobby', ownPlayer.id);
+
+        setOwnPlayer({ ...ownPlayer, state: { roomId: undefined } });
+
+        setRoom({ id: undefined, users: [] });
 
         navigate('/');
     };
@@ -64,19 +70,12 @@ const Home = () => {
     useEffect(() => {
         if (socket) {
             socket.on('lobbyCreated', room => {
-                setOwnPlayer(prev => ({
-                    ...prev,
-                    state: {
-                        ...prev.state,
-                        roomId: room.id,
-                        isHost: true
-                    }
-                }));
                 setRoom(room);
 
-                socket.on('playerInfo', player => setOwnPlayer(player));
-
-                navigate(`/lobby/${room.id}`);
+                socket.on('playerInfo', player => {
+                    setOwnPlayer(player);
+                    setPlayerSet(true);
+                });
             });
 
             socket.on('error', message => {
@@ -90,6 +89,12 @@ const Home = () => {
             };
         }
     }, [socket]);
+
+    useEffect(() => {
+        if (playerSet && room.id) {
+            navigate(`/lobby/${room.id}`);
+        }
+    }, [playerSet, room]);
 
     return (
         <div className='flex flex-col p-8 items-center gap-8'>
