@@ -13,8 +13,8 @@ import {
     updatePlayerChoice,
     updatedPlayerBlame
 } from './store/game.js';
-import { sendQuestions } from './store/questions.js';
-import { getRoom, getRoomFromUser, makeUserImposter } from './store/rooms.js';
+import { getRoomFromUser } from './store/rooms.js';
+import getQuestions from './utils/getQuestions.js';
 
 const app = express();
 const server = createServer(app);
@@ -115,7 +115,6 @@ const onRefreshLobby = (socket, roomId) => {
     io.to(roomId).emit('updateLobby', rooms[roomId].users);
 };
 
-// TODO: add game running check
 const onLeaveLobby = (socket, userId) => {
     const user = users[userId];
     if (!user) return;
@@ -132,11 +131,36 @@ const onLeaveLobby = (socket, userId) => {
         newHost.state.isHost = true;
     }
 
+    if (room.isGameRunning) {
+        rooms[room.id].isGameRunning = false;
+    }
+
     rooms[room.id].users = newUserList;
 
-    socket.leave(room.id);
-
     io.to(room.id).emit('updateLobby', rooms[room.id]);
+
+    socket.leave(room.id);
+};
+
+const onStartGame = (roomId, options) => {
+    // make random user in room imposter
+    const room = rooms[roomId];
+    if (!room) return;
+
+    const imposter = room.users[Math.floor(Math.random() * room.users.length)];
+    rooms[roomId].users.map(user =>
+        user.id === imposter.id
+            ? (user.state.isImposter = true)
+            : (user.state.isImposter = false)
+    );
+    rooms[roomId].isGameRunning = true;
+    rooms[roomId].round = room.round + 1;
+
+    // questions
+    const questions = getQuestions(roomId);
+
+    io.to(roomId).emit('updateLobby', rooms[roomId]);
+    io.to(roomId).emit('gameStarted', { options, questions });
 };
 
 /// --- SOCKET --- ///
@@ -181,25 +205,11 @@ io.on('connection', socket => {
 
     socket.on('leaveLobby', userId => onLeaveLobby(socket, userId));
 
+    socket.on('startGame', ({ roomId, options }) =>
+        onStartGame(roomId, options)
+    );
+
     /// --- SEPERATOR --- ///
-
-    socket.on('startGame', async ({ roomId, options }) => {
-        makeUserImposter(roomId);
-
-        const room = getRoom(roomId);
-
-        io.to(roomId).emit('gameStarted', options);
-        io.to(roomId).emit('updateLobby', room.users);
-
-        const questions = sendQuestions(roomId);
-
-        if (questions.error) {
-            socket.emit('error', questions.error);
-            return;
-        }
-
-        await io.to(roomId).emit('questions', questions);
-    });
 
     socket.on('choosePlayer', ({ playerId }) => {
         const updatedChoice = updatePlayerChoice(socket.id, playerId);

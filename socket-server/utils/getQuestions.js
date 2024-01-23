@@ -22,8 +22,6 @@ const getRandomQuestion = roomId => {
     const randomQuestion =
         questions[roomId][Math.floor(Math.random() * questions[roomId].length)];
 
-    console.log('randomQuestion', randomQuestion);
-
     // delete selected question from array
     const index = questions[roomId].indexOf(randomQuestion);
     if (index > -1) {
