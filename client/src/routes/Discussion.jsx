@@ -6,38 +6,57 @@ import SelectedPlayerDisplay from '../components/SelectedPlayerDisplay';
 import VotingTable from '../components/VotingTable';
 import { SocketContext } from '../context/socket';
 import { gameOptionsAtom } from '../store/game';
-import { playerAtom, selectedPlayerAtom } from '../store/players';
+import { playerAtom } from '../store/players';
 import { questionsAtom } from '../store/questions';
+import { roomAtom } from '../store/room';
 
 const Discussion = () => {
     const socket = useContext(SocketContext);
 
     const navigate = useNavigate();
 
-    const [ownPlayer] = useAtom(playerAtom);
-    const [selectedPlayer] = useAtom(selectedPlayerAtom);
-    const [questions] = useAtom(questionsAtom);
-    const [playerChoices, setPlayerChoices] = useState([]);
-
+    const [ownPlayer, setOwnPlayer] = useAtom(playerAtom);
+    const [room, setRoom] = useAtom(roomAtom);
     const [gameOptions] = useAtom(gameOptionsAtom);
+    const [questions] = useAtom(questionsAtom);
 
     const [counter, setCounter] = useState(5);
 
+    const choosenPlayer = room.users.find(
+        user => user.id === ownPlayer?.state?.choice
+    );
+
+    const playerChoices = room.users.map(user => {
+        return {
+            chooser: user,
+            choice: room.users.find(player => player.id === user.state.choice)
+        };
+    });
+
     useEffect(() => {
-        if (socket) {
-            socket.on('blamePhaseStarted', () => {
-                navigate('/blame');
-            });
+        socket.on('updateLobby', room => {
+            if (room.id !== ownPlayer.state.roomId) return;
 
-            socket.on('choiceOfAllPlayers', playerChoices => {
-                setPlayerChoices(playerChoices);
-            });
+            const user = room.users.find(user => user.id === ownPlayer.id);
+            setOwnPlayer(user);
 
-            return () => {
-                socket.removeAllListeners();
-            };
+            setRoom(room);
+        });
+
+        socket.on('blamePhaseStarted', () => {
+            navigate('/blame');
+        });
+
+        return () => {
+            socket.off('updateLobby');
+        };
+    }, [socket]);
+
+    useEffect(() => {
+        if (!room.isGameRunning) {
+            navigate(`/lobby/${ownPlayer.state.roomId}`);
         }
-    }, [navigate, socket, playerChoices]);
+    }, [room]);
 
     useEffect(() => {
         const timer =
@@ -46,8 +65,9 @@ const Discussion = () => {
         return () => clearInterval(timer);
     }, [counter]);
 
-    const startBlamePhase = () => {
-        socket.emit('startBlamePhase');
+    const startBlamePhase = e => {
+        e.preventDefault();
+        socket.emit('startBlamePhase', room.id);
     };
 
     return (
@@ -69,32 +89,30 @@ const Discussion = () => {
                     <>
                         {gameOptions.couchMode ? (
                             <SelectedPlayerDisplay
-                                selectedPlayerName={selectedPlayer?.name}
+                                selectedPlayerName={choosenPlayer.name}
                             />
                         ) : (
-                            <VotingTable playerChoices={playerChoices} />
-                        )}
-
-                        {questions && questions.normalQuestion && (
                             <div>
-                                <h2 className='text-2xl mb-4'>
-                                    Real Question:
-                                </h2>
-                                <QuestionCard
-                                    size={'small'}
-                                    question={questions.normalQuestion}
-                                />
+                                <VotingTable playerChoices={playerChoices} />
                             </div>
                         )}
+
+                        <div>
+                            <h2 className='text-2xl mb-4'>Real Question:</h2>
+                            <QuestionCard
+                                size={'small'}
+                                question={questions.normalQuestion}
+                            />
+                        </div>
                     </>
                 )}
             </div>
-            {!counter > 0 && ownPlayer?.host && (
+            {!counter > 0 && ownPlayer.state.isHost && (
                 <button
                     className={
                         'text-black text-center text-lg py-2 px-6 border border-black rounded shadow-sm shadow-black bg-zinc-500 mt-14'
                     }
-                    onClick={() => startBlamePhase()}
+                    onClick={e => startBlamePhase(e)}
                 >
                     Next
                 </button>
