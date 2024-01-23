@@ -72,7 +72,7 @@ const Game = () => {
             });
 
             socket.on('discussionPhaseStarted', () => {
-                console.log('Discussion Phase started');
+                navigate('/discussion');
             });
 
             return () => {
