@@ -166,9 +166,10 @@ const onLeaveLobby = (socket, userId) => {
 };
 
 const onStartGame = (roomId, options) => {
-    // make random user in room imposter
     const room = rooms[roomId];
     if (!room) return;
+
+    defaultPlayersState(roomId);
 
     const imposter = room.users[Math.floor(Math.random() * room.users.length)];
     rooms[roomId].users.map(user =>
@@ -179,9 +180,6 @@ const onStartGame = (roomId, options) => {
     rooms[roomId].isGameRunning = true;
     rooms[roomId].round = room.round + 1;
 
-    defaultPlayersState(roomId);
-
-    // questions
     const questions = getQuestions(roomId);
 
     io.to(roomId).emit('gameStarted', { options, questions });
@@ -260,6 +258,10 @@ io.on('connection', socket => {
         io.to(roomId).emit('discussionPhaseStarted')
     );
 
+    socket.on('startBlamePhase', roomId =>
+        io.to(roomId).emit('blamePhaseStarted')
+    );
+
     /// --- SEPERATOR --- ///
 
     socket.on('blamePlayer', ({ playerId }) => {
@@ -287,14 +289,6 @@ io.on('connection', socket => {
     //     io.to(room.id).emit('discussionPhaseStarted');
     //     io.to(room.id).emit('choiceOfAllPlayers', getPlayerChoices(room.id));
     // });
-
-    socket.on('startBlamePhase', () => {
-        const room = getRoomFromUser(socket.id);
-
-        if (!room) return;
-
-        io.to(room.id).emit('blamePhaseStarted');
-    });
 
     socket.on('startRevealPhase', () => {
         const room = getRoomFromUser(socket.id);
