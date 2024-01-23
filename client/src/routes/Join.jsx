@@ -3,20 +3,23 @@ import { useContext, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Toast from '../components/Toast';
 import { SocketContext } from '../context/socket';
-import { gameIdAtom } from '../store/game';
-import { nameAtom } from '../store/name';
+import { playerAtom } from '../store/players';
+import { roomAtom } from '../store/room';
 
 const Join = () => {
+    const socket = useContext(SocketContext);
     const navigate = useNavigate();
 
-    const socket = useContext(SocketContext);
+    const [ownPlayer, setOwnPlayer] = useAtom(playerAtom);
+    const [room, setRoom] = useAtom(roomAtom);
 
-    const [gameId, setGameId] = useAtom(gameIdAtom);
-    const [name] = useAtom(nameAtom);
+    const [gameId, setGameId] = useState(null);
+    const [playerSet, setPlayerSet] = useState(false);
+
     const [showToast, setShowToast] = useState(false);
     const [toastMessage, setToastMessage] = useState('');
 
-    const joinLobby = e => {
+    const onJoinLobby = e => {
         e.preventDefault();
 
         if (!gameId) {
@@ -25,25 +28,48 @@ const Join = () => {
             return;
         }
 
-        gameId && socket && socket.emit('checkRoom', gameId);
+        socket &&
+            socket.emit('checkRoom', gameId, res => {
+                if (res?.error) {
+                    setToastMessage(res?.error);
+                    setShowToast(true);
+                    return;
+                }
+
+                socket.emit('joinLobby', {
+                    roomId: gameId,
+                    name: ownPlayer.name
+                });
+            });
     };
 
     useEffect(() => {
         if (socket) {
-            socket.on('roomExists', exists => {
-                if (exists) {
-                    socket.emit('joinLobby', { roomId: gameId, name: name });
-
-                    navigate(`/newGame/${gameId}`);
-                } else {
-                    setToastMessage('Room does not exist');
-                    setShowToast(true);
-                }
+            socket.on('error', error => {
+                console.error(error);
             });
 
-            return () => socket.removeAllListeners();
+            socket.on('playerInfo', player => {
+                setOwnPlayer(player);
+
+                socket.on('updateLobby', room => {
+                    setRoom(room);
+                    setPlayerSet(true);
+                });
+            });
+
+            return () => {
+                socket.off('error');
+                socket.off('updateLobby');
+            };
         }
-    }, [gameId, name, navigate, socket]);
+    }, [socket]);
+
+    useEffect(() => {
+        if (playerSet && room.id) {
+            navigate(`/lobby/${gameId}`);
+        }
+    }, [playerSet, room]);
 
     return (
         <div className='flex flex-col gap-20 items-center'>
@@ -64,7 +90,7 @@ const Join = () => {
             <Link
                 to='/game'
                 className='bg-[#E84855] text-black text-center text-xl py-4 px-6 border border-black rounded shadow-sm shadow-black'
-                onClick={joinLobby}
+                onClick={e => onJoinLobby(e)}
             >
                 Join Lobby
             </Link>
