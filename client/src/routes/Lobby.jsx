@@ -11,6 +11,7 @@ import Toast from '../components/Toast';
 import { SocketContext } from '../context/socket';
 import { gameOptionsAtom } from '../store/game.old';
 import { playerAtom } from '../store/players';
+import { questionsAtom } from '../store/questions';
 import { roomAtom } from '../store/room';
 
 const Lobby = () => {
@@ -20,7 +21,10 @@ const Lobby = () => {
     const [room, setRoom] = useAtom(roomAtom);
 
     const [ownPlayer, setOwnPlayer] = useAtom(playerAtom);
-    const [gameOptions] = useAtom(gameOptionsAtom);
+    const [gameOptions, setGameOptions] = useAtom(gameOptionsAtom);
+    const [questions, setQuestions] = useAtom(questionsAtom);
+
+    const [gameStarted, setGameStarted] = useState(false);
 
     const [showToast, setShowToast] = useState(false);
     const [toastType, setToastType] = useState('');
@@ -42,40 +46,44 @@ const Lobby = () => {
     const roomId = room.id;
 
     useEffect(() => {
-        if (socket) {
-            // socket.emit('joinLobby', { roomId: gameId, name: name })
-            // socket.emit('refreshLobby', { roomId: gameId });
+        if (room.isGameRunning && questions) {
+            setGameStarted(true);
+        }
+    }, [room, questions]);
 
+    useEffect(() => {
+        if (gameStarted) {
+            navigate('/game');
+        }
+    }, [gameStarted]);
+
+    useEffect(() => {
+        if (socket) {
             socket.on('error', error => {
                 console.log(error);
             });
 
             socket.on('updateLobby', room => {
-                console.log(room);
+                if (!gameStarted) {
+                    setRoom(room);
+
+                    const user = room.users.find(
+                        user => user.id === ownPlayer.id
+                    );
+
+                    setOwnPlayer(user);
+                }
             });
 
-            // socket.on('updateLobby', players => {
-            //     setOwnPlayer(players.find(player => player.id === socket.id));
-            //     setPlayers(players.filter(player => player.id !== socket.id));
-            // });
-
-            // socket.on('playerInfo', player => {
-            //     setOwnPlayer(player);
-            // });
-
-            // socket.on('gameStarted', options => {
-            //     setGameOptions(options);
-            //     navigate(`/game/`);
-            // });
-
-            // socket.on('disconnect', () => {
-            //     socket.on('updateLobby', players => {
-            //         setPlayers(players);
-            //     });
-            // });
+            socket.on('gameStarted', ({ options, questions }) => {
+                setGameOptions(options);
+                setQuestions(questions);
+            });
 
             return () => {
                 socket.off('error');
+                socket.off('updateLobby');
+                socket.off('gameStarted');
             };
         }
     }, [socket]);
@@ -92,7 +100,9 @@ const Lobby = () => {
         navigate('/');
     };
 
-    const startGame = () => {
+    const startGame = e => {
+        e.preventDefault();
+
         if (players.length < 2) {
             setToastMessage('You need at least 3 Players');
             setToastType('error');
@@ -100,11 +110,10 @@ const Lobby = () => {
             return;
         }
 
-        socket &&
-            socket.emit('startGame', {
-                roomId: roomId,
-                options: gameOptions
-            });
+        socket.emit('startGame', {
+            roomId: roomId,
+            options: gameOptions
+        });
     };
 
     return (
@@ -138,7 +147,7 @@ const Lobby = () => {
                         <PlayerCard
                             key={player.id}
                             name={player.name}
-                            host={player.host}
+                            host={player.state.isHost}
                             backgroundColor='#FF9B71'
                         />
                     ))}
@@ -147,7 +156,7 @@ const Lobby = () => {
             <div className='flex flex-col gap-6'>
                 {ownPlayer.state.isHost && (
                     <Button
-                        handler={startGame}
+                        handler={e => startGame(e)}
                         color='#1B998B'
                         className='text-black text-xl py-4 px-6 border border-black rounded shadow-sm shadow-black'
                     >
