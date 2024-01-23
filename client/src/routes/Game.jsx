@@ -1,62 +1,102 @@
 import { useAtom } from 'jotai';
 import { useContext, useEffect, useState } from 'react';
-import ChoosePlayer from '../components/ChoosePlayer';
+import { useNavigate } from 'react-router-dom';
+import Button from '../components/Button';
 import QuestionCard from '../components/QuestionCard';
+import SelectPlayer from '../components/SelectPlayer';
+import Toast from '../components/Toast';
 import { SocketContext } from '../context/socket';
-import { gameRoundAtom } from '../store/game';
-import { allPlayersAtom, playerAtom } from '../store/players';
+import { playerAtom } from '../store/players';
 import { questionsAtom } from '../store/questions';
+import { roomAtom } from '../store/room';
 
 const Game = () => {
     const socket = useContext(SocketContext);
-    const [questions, setQuestions] = useAtom(questionsAtom);
-    const [players, setPlayers] = useAtom(allPlayersAtom);
+    const navigate = useNavigate();
+
     const [ownPlayer, setOwnPlayer] = useAtom(playerAtom);
-    const [gameRound, setGameRound] = useAtom(gameRoundAtom);
+    const [room, setRoom] = useAtom(roomAtom);
+    const [questions] = useAtom(questionsAtom);
+
+    const [allPlayersChosen, setAllPlayersChosen] = useState(false);
+    const [showToast, setShowToast] = useState(false);
 
     const [counter, setCounter] = useState(5);
 
-    useEffect(() => {
-        setGameRound(prev => prev + 1);
-    }, []);
+    const startRevealPhase = e => {
+        e.preventDefault();
+
+        socket.emit('startDiscussionPhase', room.id);
+    };
+
+    const setPlayerChoice = playerId => {
+        setOwnPlayer(prev => ({
+            ...prev,
+            state: {
+                ...prev.state,
+                hasChosen: true,
+                choice: playerId
+            }
+        }));
+    };
 
     useEffect(() => {
         const timer =
             counter > 0 && setInterval(() => setCounter(counter - 1), 1000);
 
-        return () => clearInterval(timer);
+        return () => {
+            clearInterval(timer);
+        };
     }, [counter]);
 
     useEffect(() => {
+        if (!room.isGameRunning) {
+            navigate(`/lobby/${ownPlayer.state.roomId}`);
+        }
+    }, [room]);
+
+    useEffect(() => {
         if (socket) {
-            const handleUpdateLobby = players => {
-                setOwnPlayer(players.find(player => player.id === socket.id));
-                setPlayers(players.filter(player => player.id !== socket.id));
-            };
+            socket.on('updateLobby', room => {
+                if (room.id !== ownPlayer.state.roomId) return;
 
-            const handleQuestions = questions => {
-                setQuestions(questions);
-            };
+                const user = room.users.find(user => user.id === ownPlayer.id);
+                setOwnPlayer(user);
 
-            socket.on('updateLobby', handleUpdateLobby);
-            socket.on('questions', handleQuestions);
+                setRoom(room);
+            });
+
+            socket.on('allPlayersChosen', () => {
+                setShowToast(true);
+                setAllPlayersChosen(true);
+            });
+
+            socket.on('discussionPhaseStarted', () => {
+                console.log('Discussion Phase started');
+            });
 
             return () => {
-                socket.off('updateLobby', handleUpdateLobby);
-                socket.off('questions', handleQuestions);
+                socket.off('updateLobby');
+                socket.off('allPlayersChosen');
             };
         }
-    }, []);
+    }, [socket]);
 
-    const gameReady = ownPlayer && players && questions && socket;
+    useEffect(() => {
+        if (ownPlayer.state.hasChosen) {
+            socket.emit('choosePlayer', ownPlayer);
+        }
+    }, [ownPlayer.state.choice]);
+
     const gameCountdown = counter > 0;
-    const question = ownPlayer?.imposter
-        ? questions?.imposterQuestion
-        : questions?.normalQuestion;
+    const question = ownPlayer.state.isImposter
+        ? questions.imposterQuestion
+        : questions.normalQuestion;
+    const players = room.users.filter(user => user.id !== ownPlayer.id);
 
     return (
         <div className='flex flex-col gap-20 items-center'>
-            <h1 className='text-3xl underline'>Game - Number {gameRound}</h1>
+            <h1 className='text-3xl underline'>Game - Number {room.round}</h1>
             {gameCountdown ? (
                 <div className='flex flex-col justify-center gap-10 mt-6 text-center'>
                     <h2 className='text-4xl'>Game starts in {counter}</h2>
@@ -65,14 +105,25 @@ const Game = () => {
                         <span className='text-teal-600'>Screen!</span>
                     </h3>
                 </div>
-            ) : gameReady ? (
+            ) : (
                 <>
                     <QuestionCard question={question} />
-                    <ChoosePlayer players={players} socket={socket} />
+                    <SelectPlayer
+                        players={players}
+                        setPlayer={setPlayerChoice}
+                    />
                 </>
-            ) : (
-                <h1 className='text-3xl underline'>Loading...</h1>
             )}
+            {allPlayersChosen && ownPlayer.state.isHost && (
+                <Button color='#10b981' handler={e => startRevealPhase(e)}>
+                    Next
+                </Button>
+            )}
+            <Toast
+                message={'All Player selected someone'}
+                show={showToast}
+                onClose={() => setShowToast(false)}
+            />
         </div>
     );
 };
