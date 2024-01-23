@@ -14,12 +14,7 @@ import {
     updatedPlayerBlame
 } from './store/game.js';
 import { sendQuestions } from './store/questions.js';
-import {
-    getRoom,
-    getRoomFromUser,
-    makeUserImposter,
-    removeUserFromRoom
-} from './store/rooms.js';
+import { getRoom, getRoomFromUser, makeUserImposter } from './store/rooms.js';
 
 const app = express();
 const server = createServer(app);
@@ -31,7 +26,6 @@ const io = new Server(server, {
     cors: {
         origin: '*'
     },
-    transports: ['polling', 'websocket'],
     connectionStateRecovery: {
         maxDisconnectionDuration: 2 * 60 * 1000
     }
@@ -46,8 +40,15 @@ const { randomUUID: generateRoomId } = new ShortUniqueId({
     dictionary: 'alphanum_lower'
 });
 
-/// Handler
+/// --- HELPERS --- ///
+const isUserInRoom = (userId, roomId) => {
+    const room = rooms[roomId];
+    if (!room) return false;
 
+    return room.users.find(user => user.id === userId);
+};
+
+/// --- HANDLER --- ///
 const onCreateLobby = (socket, userId, name) => {
     const roomId = generateRoomId();
     rooms[roomId] = {
@@ -81,8 +82,16 @@ const onJoinLobby = (socket, roomId, name, userId) => {
         return;
     }
 
+    if (isUserInRoom(userId, roomId)) {
+        socket.emit('error', 'You are already in this room');
+        return;
+    }
+
     // 2. Check if a user is host
-    const isHost = rooms[roomId].users.find(user => user.host);
+    const isHost = rooms[roomId].users.find(user => user.state.isHost);
+
+    // if user is in room
+    rooms[roomId].users.find(user => user.id === userId);
 
     // 3. Store the user
     const user = users[userId];
@@ -98,8 +107,6 @@ const onJoinLobby = (socket, roomId, name, userId) => {
 
     // 5. Send user info to client
     socket.emit('playerInfo', user);
-
-    // TODO: send whole room to client
     // 6. Send updated lobby to all clients
     io.to(roomId).emit('updateLobby', rooms[roomId]);
 };
@@ -116,9 +123,14 @@ const onLeaveLobby = (socket, userId) => {
     const room = rooms[user.state.roomId];
     if (!room) return;
 
-    const newUserList = room.users.filter(() => {
+    const newUserList = room.users.filter(user => {
         return user.id !== userId;
     });
+
+    if (user.state.isHost && newUserList.length > 0) {
+        const newHost = newUserList[0];
+        newHost.state.isHost = true;
+    }
 
     rooms[room.id].users = newUserList;
 
@@ -264,9 +276,24 @@ io.on('connection', socket => {
     });
 
     socket.on('disconnect', () => {
-        removeUserFromRoom(socket.id);
+        const user = users[userId];
+        if (!user) return;
 
-        // TODO: remove room if no users
+        const room = rooms[user.state.roomId];
+        if (!room) return;
+
+        const newUserList = room.users.filter(() => {
+            return user.id !== userId;
+        });
+
+        rooms[room.id].users = newUserList;
+
+        socket.leave(room.id);
+
+        io.to(room.id).emit('updateLobby', rooms[room.id]);
+
+        delete connections[userId];
+        delete users[userId];
 
         console.log('Client disconnected', socket.id);
     });
