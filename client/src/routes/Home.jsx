@@ -48,11 +48,11 @@ const Home = () => {
     const handleResumeGame = e => {
         e.preventDefault();
 
-        // if (!ownPlayer.name) {
-        //     return setToastError();
-        // }
+        if (!ownPlayer.name) {
+            return setToastError();
+        }
 
-        // navigate(`/lobby/${ownPlayer.state.roomId}`);
+        navigate(`/lobby/${ownPlayer.state.roomId}`);
     };
 
     const handleLeaveLobby = e => {
