@@ -9,7 +9,7 @@ import PlayerCard from '../components/PlayerCard';
 import SettingsModal from '../components/SettingsModal';
 import Toast from '../components/Toast';
 import { SocketContext } from '../context/socket';
-import { gameOptionsAtom } from '../store/game.old';
+import { gameOptionsAtom } from '../store/game';
 import { playerAtom } from '../store/players';
 import { questionsAtom } from '../store/questions';
 import { roomAtom } from '../store/room';
