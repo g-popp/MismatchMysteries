@@ -6,11 +6,8 @@ import { Server } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
 import {
     clearForNewGame,
-    getPlayerChoices,
     haveAllPlayersBlamed,
-    haveAllPlayersChosen,
     revealMismatch,
-    updatePlayerChoice,
     updatedPlayerBlame
 } from './store/game.js';
 import { getRoomFromUser } from './store/rooms.js';
@@ -46,6 +43,32 @@ const isUserInRoom = (userId, roomId) => {
     if (!room) return false;
 
     return room.users.find(user => user.id === userId);
+};
+
+const updatePlayer = player => {
+    const room = rooms[player.state.roomId];
+    if (!room) return { error: 'Room does not exist' };
+
+    const user = room.users.find(user => user.id === player.id);
+    if (!user) return { error: 'User does not exist' };
+
+    room.users.map(user => {
+        if (user.id === player.id) {
+            user.state = player.state;
+        }
+    });
+};
+
+const defaultPlayersState = roomId => {
+    const room = rooms[roomId];
+    if (!room) return;
+
+    room.users.map(user => {
+        user.state.hasChosen = false;
+        user.state.hasBlamed = false;
+        user.state.choice = undefined;
+        user.state.blame = undefined;
+    });
 };
 
 /// --- HANDLER --- ///
@@ -156,11 +179,33 @@ const onStartGame = (roomId, options) => {
     rooms[roomId].isGameRunning = true;
     rooms[roomId].round = room.round + 1;
 
+    defaultPlayersState(roomId);
+
     // questions
     const questions = getQuestions(roomId);
 
-    io.to(roomId).emit('updateLobby', rooms[roomId]);
     io.to(roomId).emit('gameStarted', { options, questions });
+    io.to(roomId).emit('updateLobby', rooms[roomId]);
+};
+
+const onChoosePlayer = (socket, user) => {
+    const roomId = user.state.roomId;
+    const updatedChoice = updatePlayer(user);
+
+    if (updatedChoice?.error) {
+        socket.emit('error', updatedChoice.error);
+        return;
+    }
+
+    io.to(roomId).emit('updateLobby', rooms[roomId]);
+
+    const allPlayersChosen = rooms[roomId].users.every(
+        user => user.state.hasChosen
+    );
+
+    if (allPlayersChosen) {
+        io.to(roomId).emit('allPlayersChosen');
+    }
 };
 
 /// --- SOCKET --- ///
@@ -209,25 +254,13 @@ io.on('connection', socket => {
         onStartGame(roomId, options)
     );
 
+    socket.on('choosePlayer', user => onChoosePlayer(socket, user));
+
+    socket.on('startDiscussionPhase', roomId =>
+        io.to(roomId).emit('discussionPhaseStarted')
+    );
+
     /// --- SEPERATOR --- ///
-
-    socket.on('choosePlayer', ({ playerId }) => {
-        const updatedChoice = updatePlayerChoice(socket.id, playerId);
-
-        if (updatedChoice.error) {
-            socket.emit('error', updatedChoice.error);
-            return;
-        }
-
-        const room = getRoomFromUser(socket.id);
-
-        if (!room) return;
-
-        if (haveAllPlayersChosen(room.id)) {
-            io.to(room.id).emit('allPlayersChosen');
-            console.log("All players have chosen, let's go!");
-        }
-    });
 
     socket.on('blamePlayer', ({ playerId }) => {
         const choice = updatedPlayerBlame(socket.id, playerId);
@@ -243,18 +276,17 @@ io.on('connection', socket => {
 
         if (haveAllPlayersBlamed(room.id)) {
             io.to(room.id).emit('allPlayersBlamed');
-            console.log("All players have blamed, let's go!");
         }
     });
 
-    socket.on('startDiscussionPhase', () => {
-        const room = getRoomFromUser(socket.id);
+    // socket.on('startDiscussionPhase', () => {
+    //     const room = getRoomFromUser(socket.id);
 
-        if (!room) return;
+    //     if (!room) return;
 
-        io.to(room.id).emit('discussionPhaseStarted');
-        io.to(room.id).emit('choiceOfAllPlayers', getPlayerChoices(room.id));
-    });
+    //     io.to(room.id).emit('discussionPhaseStarted');
+    //     io.to(room.id).emit('choiceOfAllPlayers', getPlayerChoices(room.id));
+    // });
 
     socket.on('startBlamePhase', () => {
         const room = getRoomFromUser(socket.id);
