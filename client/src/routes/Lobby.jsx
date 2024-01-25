@@ -9,7 +9,8 @@ import PlayerCard from '../components/PlayerCard';
 import SettingsModal from '../components/SettingsModal';
 import Toast from '../components/Toast';
 import { SocketContext } from '../context/socket';
-import { gameOptionsAtom } from '../store/game';
+import { useToast } from '../hooks/useToast';
+import { gameOptionsAtom, whoWonAtom } from '../store/game';
 import { playerAtom } from '../store/players';
 import { questionsAtom } from '../store/questions';
 import { roomAtom } from '../store/room';
@@ -23,12 +24,17 @@ const Lobby = () => {
     const [ownPlayer, setOwnPlayer] = useAtom(playerAtom);
     const [gameOptions, setGameOptions] = useAtom(gameOptionsAtom);
     const [questions, setQuestions] = useAtom(questionsAtom);
+    const [whoWon, setWhoWon] = useAtom(whoWonAtom);
 
     const [gameStarted, setGameStarted] = useState(false);
 
-    const [showToast, setShowToast] = useState(false);
-    const [toastType, setToastType] = useState('');
-    const [toastMessage, setToastMessage] = useState('');
+    const [
+        showToast,
+        toastType,
+        toastMessage,
+        hideToast,
+        showToastWithMessage
+    ] = useToast();
 
     const [showOptions, setShowOptions] = useState(false);
 
@@ -36,10 +42,7 @@ const Lobby = () => {
 
     const copyIdToClipboard = () => {
         clipboardCopy(room.id);
-        setToastMessage('Game ID copied');
-        setToastType('default');
-        setShowToast(true);
-        setTimeout(() => setShowToast(false), 2000);
+        showToastWithMessage('Copied ID to Clipboard');
     };
 
     const players = room.users.filter(user => user.id !== ownPlayer.id);
@@ -48,11 +51,12 @@ const Lobby = () => {
     useEffect(() => {
         if (room.isGameRunning && questions) {
             setGameStarted(true);
+            setWhoWon(undefined);
         }
     }, [room, questions]);
 
     useEffect(() => {
-        if (gameStarted) {
+        if (gameStarted && !whoWon) {
             navigate('/game');
         }
     }, [gameStarted]);
@@ -104,9 +108,7 @@ const Lobby = () => {
         e.preventDefault();
 
         if (players.length < 2) {
-            setToastMessage('You need at least 3 Players');
-            setToastType('error');
-            setShowToast(true);
+            showToastWithMessage('You need at least 3 Players', 'error');
             return;
         }
 
@@ -172,7 +174,7 @@ const Lobby = () => {
                 message={toastMessage}
                 type={toastType}
                 show={showToast}
-                onClose={() => setShowToast(false)}
+                onClose={hideToast}
             />
         </div>
     );
