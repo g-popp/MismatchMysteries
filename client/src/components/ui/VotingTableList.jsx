@@ -2,9 +2,11 @@
 import { colors } from '../../constants/colors';
 
 const VotingTableList = ({ playerChoices }) => {
+    console.log(playerChoices);
+
     return playerChoices.map((choice, index) => (
         <tr
-            key={choice.chooser.id}
+            key={index}
             style={{
                 backgroundColor: colors[`rowColor-${index % 4}`]
             }}
@@ -13,7 +15,7 @@ const VotingTableList = ({ playerChoices }) => {
                 {choice.chooser.name}
             </td>
             <td className='text-center text-black border-b-2 border-r-2 border-black'>
-                {choice.chosen.name}
+                {choice.choice.name}
             </td>
         </tr>
     ));

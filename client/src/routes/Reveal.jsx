@@ -1,40 +1,29 @@
 import { useAtom } from 'jotai';
-import { useContext, useEffect, useRef, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import BlamedPlayerDisplay from '../components/BlamedPlayerDisplay';
 import Button from '../components/Button';
 import QuestionCard from '../components/QuestionCard';
 import { SocketContext } from '../context/socket';
-import { gameIdAtom } from '../store/game';
-import {
-    allPlayersAtom,
-    playerAtom,
-    selectedPlayerAtom
-} from '../store/players';
+
+import { whoWonAtom } from '../store/game';
+import { playerAtom } from '../store/players';
 import { questionsAtom } from '../store/questions';
+import { roomAtom } from '../store/room';
 
 const Reveal = () => {
     const socket = useContext(SocketContext);
     const navigate = useNavigate();
 
     const [questions] = useAtom(questionsAtom);
+    const [ownPlayer, setOwnPlayer] = useAtom(playerAtom);
+    const [room, setRoom] = useAtom(roomAtom);
+
+    const [whoWon, setWhoWon] = useAtom(whoWonAtom);
 
     const [counter, setCounter] = useState(5);
-    const [youWon, setYouWon] = useState(false);
-    const [gameId] = useAtom(gameIdAtom);
-    const [selectedPlayer] = useAtom(selectedPlayerAtom);
 
-    const [allPlayers] = useAtom(allPlayersAtom);
-
-    const [ownPlayer] = useAtom(playerAtom);
-    const ownPlayerRef = useRef(ownPlayer);
-    ownPlayerRef.current = ownPlayer;
-
-    const [imposter, setImposter] = useState(null);
-
-    const startNextRound = () => {
-        socket && socket.emit('startNextRound');
-    };
+    let youWon;
 
     useEffect(() => {
         const timer =
@@ -44,40 +33,45 @@ const Reveal = () => {
     }, [counter]);
 
     useEffect(() => {
-        setImposter([...allPlayers, ownPlayer].find(player => player.imposter));
-    }, [allPlayers, ownPlayer]);
+        socket.on('nextRoundStarted', room => {
+            if (room.id !== ownPlayer.state.roomId) return;
 
-    useEffect(() => {
-        const onRevealResult = result => {
-            setYouWon(prevYouWon => {
-                if (result === 'defaultsWon') {
-                    return !ownPlayerRef.current.imposter;
-                } else if (result === 'imposterWon') {
-                    return ownPlayerRef.current.imposter;
-                }
-                return prevYouWon;
-            });
-        };
+            const user = room.users.find(user => user.id === ownPlayer.id);
+            setOwnPlayer(user);
 
-        const onNextRoundStarted = () => {
-            navigate(`/newGame/${gameId}`);
-        };
-
-        socket.on('revealResult', onRevealResult);
-        socket.on('nextRoundStarted', onNextRoundStarted);
+            setRoom(room);
+            setWhoWon(undefined);
+        });
 
         return () => {
-            socket.off('revealResult', onRevealResult);
-            socket.off('nextRoundStarted', onNextRoundStarted);
+            socket.off('nextRoundStarted');
         };
-    }, []);
+    }, [socket]);
+
+    useEffect(() => {
+        if (room.isGameRunning) return;
+        navigate(`/lobby/${room.id}`);
+    }, [room.isGameRunning]);
+
+    if (whoWon === 'defaultsWon') {
+        youWon = !ownPlayer.state.isImposter;
+    } else {
+        youWon = ownPlayer.state.isImposter;
+    }
 
     const revealCountdown = counter > 0;
     const revealText = youWon ? 'You won!' : 'You lost!';
     const revealColor = youWon ? 'text-green-400' : 'text-red-400';
-    const nextGameButton = ownPlayer?.host && (
+    const blamedPlayer = room.users.find(
+        player => player.id === ownPlayer.state.blame
+    );
+    const imposter = room.users.find(player => player.state.isImposter);
+
+    const nextGameButton = ownPlayer.state.isHost && (
         <Button
-            handler={() => startNextRound()}
+            handler={() => {
+                socket.emit('startNextRound', room.id);
+            }}
             color='#FF9B71'
             className='text-black text-xl py-4 px-6 border border-black rounded shadow-sm shadow-black'
         >
@@ -109,7 +103,7 @@ const Reveal = () => {
                         />
                     </div>
                     <BlamedPlayerDisplay
-                        blamedPlayerName={selectedPlayer.name}
+                        blamedPlayerName={blamedPlayer?.name}
                     />
                     {nextGameButton}
                 </>

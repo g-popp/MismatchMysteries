@@ -23,7 +23,7 @@ const Game = () => {
 
     const [counter, setCounter] = useState(5);
 
-    const startRevealPhase = e => {
+    const startDiscussionPhase = e => {
         e.preventDefault();
 
         socket.emit('startDiscussionPhase', room.id);
@@ -115,7 +115,7 @@ const Game = () => {
                 </>
             )}
             {allPlayersChosen && ownPlayer.state.isHost && (
-                <Button color='#10b981' handler={e => startRevealPhase(e)}>
+                <Button color='#10b981' handler={e => startDiscussionPhase(e)}>
                     Next
                 </Button>
             )}
