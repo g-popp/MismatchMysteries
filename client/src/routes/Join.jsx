@@ -3,6 +3,7 @@ import { useContext, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Toast from '../components/Toast';
 import { SocketContext } from '../context/socket';
+import { useToast } from '../hooks/useToast';
 import { playerAtom } from '../store/players';
 import { roomAtom } from '../store/room';
 
@@ -16,23 +17,26 @@ const Join = () => {
     const [gameId, setGameId] = useState(null);
     const [playerSet, setPlayerSet] = useState(false);
 
-    const [showToast, setShowToast] = useState(false);
-    const [toastMessage, setToastMessage] = useState('');
+    const [
+        showToast,
+        toastType,
+        toastMessage,
+        hideToast,
+        showToastWithMessage
+    ] = useToast();
 
     const onJoinLobby = e => {
         e.preventDefault();
 
         if (!gameId) {
-            setToastMessage('Game ID is missing');
-            setShowToast(true);
+            showToastWithMessage('Game ID is missing', 'error');
             return;
         }
 
         socket &&
             socket.emit('checkRoom', gameId, res => {
                 if (res?.error) {
-                    setToastMessage(res?.error);
-                    setShowToast(true);
+                    showToastWithMessage(res.error, 'error');
                     return;
                 }
 
@@ -97,9 +101,9 @@ const Join = () => {
 
             <Toast
                 message={toastMessage}
-                type='error'
+                type={toastType}
                 show={showToast}
-                onClose={() => setShowToast(false)}
+                onClose={hideToast}
             />
         </div>
     );
