@@ -5,6 +5,7 @@ import Button from '../components/Button';
 import SelectPlayer from '../components/SelectPlayer';
 import Toast from '../components/Toast';
 import { SocketContext } from '../context/socket';
+import { useToast } from '../hooks/useToast';
 import { whoWonAtom } from '../store/game';
 import { playerAtom } from '../store/players';
 import { roomAtom } from '../store/room';
@@ -18,7 +19,13 @@ const Blame = () => {
     const [whoWon, setWhoWon] = useAtom(whoWonAtom);
 
     const [allPlayersChosen, setAllPlayersChosen] = useState(false);
-    const [showToast, setShowToast] = useState(false);
+    const [
+        showToast,
+        toastType,
+        toastMessage,
+        hideToast,
+        showToastWithMessage
+    ] = useToast();
 
     const players = room.users.filter(player => player.id !== ownPlayer.id);
 
@@ -51,8 +58,8 @@ const Blame = () => {
             });
 
             socket.on('allPlayersBlamed', () => {
-                setShowToast(true);
                 setAllPlayersChosen(true);
+                showToastWithMessage('Every Player has blamed someone');
             });
 
             socket.on('revealResult', result => {
@@ -98,9 +105,10 @@ const Blame = () => {
                 </Button>
             )}
             <Toast
-                message={'All Player selected someone'}
+                message={toastMessage}
+                type={toastType}
                 show={showToast}
-                onClose={() => setShowToast(false)}
+                onClose={hideToast}
             />
         </div>
     );

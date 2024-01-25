@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unescaped-entities */
 import { useAtom } from 'jotai';
 import { useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -6,6 +7,7 @@ import QuestionCard from '../components/QuestionCard';
 import SelectPlayer from '../components/SelectPlayer';
 import Toast from '../components/Toast';
 import { SocketContext } from '../context/socket';
+import { useToast } from '../hooks/useToast';
 import { playerAtom } from '../store/players';
 import { questionsAtom } from '../store/questions';
 import { roomAtom } from '../store/room';
@@ -19,7 +21,13 @@ const Game = () => {
     const [questions] = useAtom(questionsAtom);
 
     const [allPlayersChosen, setAllPlayersChosen] = useState(false);
-    const [showToast, setShowToast] = useState(false);
+    const [
+        showToast,
+        toastType,
+        toastMessage,
+        hideToast,
+        showToastWithMessage
+    ] = useToast();
 
     const [counter, setCounter] = useState(5);
 
@@ -67,8 +75,8 @@ const Game = () => {
             });
 
             socket.on('allPlayersChosen', () => {
-                setShowToast(true);
                 setAllPlayersChosen(true);
+                showToastWithMessage('Every Player has chosen someone');
             });
 
             socket.on('discussionPhaseStarted', () => {
@@ -120,9 +128,10 @@ const Game = () => {
                 </Button>
             )}
             <Toast
-                message={'All Player selected someone'}
+                message={toastMessage}
+                type={toastType}
                 show={showToast}
-                onClose={() => setShowToast(false)}
+                onClose={hideToast}
             />
         </div>
     );

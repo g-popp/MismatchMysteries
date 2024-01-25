@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import Button from '../components/Button';
 import Toast from '../components/Toast';
 import { SocketContext } from '../context/socket';
+import { useToast } from '../hooks/useToast';
 import { playerAtom } from '../store/players';
 import { roomAtom } from '../store/room';
 
@@ -14,15 +15,18 @@ const Home = () => {
     const [ownPlayer, setOwnPlayer] = useAtom(playerAtom);
     const [room, setRoom] = useAtom(roomAtom);
 
-    const [showToast, setShowToast] = useState(false);
-    const [toastMessage, setToastMessage] = useState('');
+    const [
+        showToast,
+        toastType,
+        toastMessage,
+        hideToast,
+        showToastWithMessage
+    ] = useToast();
 
     const [playerSet, setPlayerSet] = useState(false);
 
-    const setToastError = () => {
-        setToastMessage('Name is missing');
-        setShowToast(true);
-    };
+    const setToastError = () =>
+        showToastWithMessage('Please enter a name', 'error');
 
     const handleNewGame = e => {
         e.preventDefault();
@@ -153,9 +157,9 @@ const Home = () => {
             </div>
             <Toast
                 message={toastMessage}
-                type='error'
+                type={toastType}
                 show={showToast}
-                onClose={() => setShowToast(false)}
+                onClose={hideToast}
             />
         </div>
     );
