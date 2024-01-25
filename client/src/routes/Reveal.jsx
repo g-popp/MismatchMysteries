@@ -43,8 +43,18 @@ const Reveal = () => {
             setWhoWon(undefined);
         });
 
+        socket.on('updateLobby', room => {
+            if (room.id !== ownPlayer.state.roomId) return;
+
+            const user = room.users.find(user => user.id === ownPlayer.id);
+            setOwnPlayer(user);
+
+            setRoom(room);
+        });
+
         return () => {
             socket.off('nextRoundStarted');
+            socket.off('updateLobby');
         };
     }, [socket]);
 

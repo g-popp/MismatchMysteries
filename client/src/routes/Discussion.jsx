@@ -49,6 +49,7 @@ const Discussion = () => {
 
         return () => {
             socket.off('updateLobby');
+            socket.off('blamePhaseStarted');
         };
     }, [socket]);
 
@@ -56,7 +57,7 @@ const Discussion = () => {
         if (!room.isGameRunning) {
             navigate(`/lobby/${ownPlayer.state.roomId}`);
         }
-    }, [room]);
+    }, [room.isGameRunning]);
 
     useEffect(() => {
         const timer =
@@ -89,7 +90,7 @@ const Discussion = () => {
                     <>
                         {gameOptions.couchMode ? (
                             <SelectedPlayerDisplay
-                                selectedPlayerName={choosenPlayer.name}
+                                selectedPlayerName={choosenPlayer?.name}
                             />
                         ) : (
                             <div>
