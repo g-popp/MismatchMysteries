@@ -4,13 +4,6 @@ import { createServer } from 'node:http';
 import ShortUniqueId from 'short-unique-id';
 import { Server } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
-import {
-    clearForNewGame,
-    haveAllPlayersBlamed,
-    revealMismatch,
-    updatedPlayerBlame
-} from './store/game.js';
-import { getRoomFromUser } from './store/rooms.js';
 import getQuestions from './utils/getQuestions.js';
 
 const app = express();
@@ -69,6 +62,50 @@ const defaultPlayersState = roomId => {
         user.state.choice = undefined;
         user.state.blame = undefined;
     });
+};
+
+const revealMismatch = roomId => {
+    const room = rooms[roomId];
+    if (!room) return;
+
+    const players = room.users;
+    if (!players) return;
+
+    const blames = players.map(player => player.state.blame);
+
+    const uniqueBlames = [...new Set(blames)];
+
+    const sortedBlames = uniqueBlames
+        .map(blame => {
+            const count = blames.filter(player => player === blame).length;
+            const player = players.find(player => player.id === blame);
+
+            return { ...player, count };
+        })
+        .sort((a, b) => b.count - a.count);
+
+    const imposter = sortedBlames.find(player => player.state.isImposter);
+
+    if (!imposter) return 'imposterWon';
+
+    const defaults = sortedBlames.filter(player => !player.state.isImposter);
+
+    if (defaults.length === 0) return 'defaultsWon';
+
+    const highestNonImposterCount = defaults[0].count;
+
+    if (imposter.count <= highestNonImposterCount) return 'imposterWon';
+
+    return 'defaultsWon';
+};
+
+const resetRoom = roomId => {
+    const room = rooms[roomId];
+    if (!room) return;
+
+    defaultPlayersState(roomId);
+
+    room.isGameRunning = false;
 };
 
 /// --- HANDLER --- ///
@@ -206,6 +243,41 @@ const onChoosePlayer = (socket, user) => {
     }
 };
 
+const onBlamePlayer = (socket, user) => {
+    const roomId = user.state.roomId;
+    const updatedBlame = updatePlayer(user);
+
+    if (updatedBlame?.error) {
+        socket.emit('error', updatedBlame.error);
+        return;
+    }
+
+    io.to(roomId).emit('updateLobby', rooms[roomId]);
+
+    const allPlayersBlamed = rooms[roomId].users.every(
+        user => user.state.hasBlamed
+    );
+
+    if (allPlayersBlamed) {
+        io.to(roomId).emit('allPlayersBlamed');
+    }
+};
+
+const onRevealPhase = (socket, roomId) => {
+    const result = revealMismatch(roomId);
+
+    io.to(roomId).emit('revealResult', result);
+};
+
+const onStartNextRound = (socket, roomId) => {
+    const room = rooms[roomId];
+    if (!room) return;
+
+    resetRoom(roomId);
+
+    io.to(roomId).emit('nextRoundStarted', room);
+};
+
 /// --- SOCKET --- ///
 io.on('connection', socket => {
     // Generate a new User ID
@@ -262,54 +334,11 @@ io.on('connection', socket => {
         io.to(roomId).emit('blamePhaseStarted')
     );
 
-    /// --- SEPERATOR --- ///
+    socket.on('blamePlayer', user => onBlamePlayer(socket, user));
 
-    socket.on('blamePlayer', ({ playerId }) => {
-        const choice = updatedPlayerBlame(socket.id, playerId);
+    socket.on('startRevealPhase', roomId => onRevealPhase(socket, roomId));
 
-        if (choice.error) {
-            socket.emit('error', choice.error);
-            return;
-        }
-
-        const room = getRoomFromUser(socket.id);
-
-        if (!room) return;
-
-        if (haveAllPlayersBlamed(room.id)) {
-            io.to(room.id).emit('allPlayersBlamed');
-        }
-    });
-
-    // socket.on('startDiscussionPhase', () => {
-    //     const room = getRoomFromUser(socket.id);
-
-    //     if (!room) return;
-
-    //     io.to(room.id).emit('discussionPhaseStarted');
-    //     io.to(room.id).emit('choiceOfAllPlayers', getPlayerChoices(room.id));
-    // });
-
-    socket.on('startRevealPhase', () => {
-        const room = getRoomFromUser(socket.id);
-
-        if (!room) return;
-
-        const result = revealMismatch(room.id);
-
-        io.to(room.id).emit('revealPhaseStarted');
-        io.to(room.id).emit('revealResult', result);
-    });
-
-    socket.on('startNextRound', () => {
-        const room = getRoomFromUser(socket.id);
-
-        if (!room) return;
-
-        clearForNewGame(room.id);
-
-        io.to(room.id).emit('nextRoundStarted');
-    });
+    socket.on('startNextRound', roomId => onStartNextRound(socket, roomId));
 
     socket.on('disconnect', () => {
         const user = users[userId];
