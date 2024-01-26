@@ -50,7 +50,7 @@ const Join = () => {
     useEffect(() => {
         if (socket) {
             socket.on('error', error => {
-                console.error(error);
+                showToastWithMessage(error, 'error');
             });
 
             socket.on('playerInfo', player => {
