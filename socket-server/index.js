@@ -109,6 +109,9 @@ const resetRoom = roomId => {
 };
 
 const leaveRoom = (room, user) => {
+    const findUser = room.users.find(player => player.id === user.id);
+    if (!findUser) return;
+
     const newUserList = room.users.filter(player => player.id !== user.id);
 
     if (user.state.isHost && newUserList.length > 0) {
@@ -151,8 +154,8 @@ const onCreateLobby = (socket, userId, name) => {
 };
 
 const onJoinLobby = (socket, roomId, name, userId) => {
-    // 1. Check if room exists
-    if (!rooms[roomId]) {
+    const room = rooms[roomId];
+    if (!room) {
         socket.emit('error', 'Room does not exist');
         return;
     }
@@ -162,13 +165,13 @@ const onJoinLobby = (socket, roomId, name, userId) => {
         return;
     }
 
-    // 2. Check if a user is host
+    if (room.isGameRunning) {
+        socket.emit('error', 'The Game is still running');
+        return;
+    }
+
     const isHost = rooms[roomId].users.find(user => user.state.isHost);
 
-    // if user is in room
-    rooms[roomId].users.find(user => user.id === userId);
-
-    // 3. Store the user
     const user = users[userId];
     user.name = name;
     user.state = {
@@ -176,13 +179,10 @@ const onJoinLobby = (socket, roomId, name, userId) => {
         isHost: !isHost
     };
 
-    // 4. Add user to room
     rooms[roomId].users.push(user);
     socket.join(roomId);
 
-    // 5. Send user info to client
     socket.emit('playerInfo', user);
-    // 6. Send updated lobby to all clients
     io.to(roomId).emit('updateLobby', rooms[roomId]);
 };
 
