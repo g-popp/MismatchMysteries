@@ -108,6 +108,21 @@ const resetRoom = roomId => {
     room.isGameRunning = false;
 };
 
+const leaveRoom = (room, user) => {
+    const newUserList = room.users.filter(player => player.id !== user.id);
+
+    if (user.state.isHost && newUserList.length > 0) {
+        const newHost = newUserList[0];
+        newHost.state.isHost = true;
+    }
+
+    if (room.isGameRunning) {
+        rooms[room.id].isGameRunning = false;
+    }
+
+    return newUserList;
+};
+
 /// --- HANDLER --- ///
 const onCreateLobby = (socket, userId, name) => {
     const roomId = generateRoomId();
@@ -182,24 +197,34 @@ const onLeaveLobby = (socket, userId) => {
     const room = rooms[user.state.roomId];
     if (!room) return;
 
-    const newUserList = room.users.filter(user => {
-        return user.id !== userId;
-    });
-
-    if (user.state.isHost && newUserList.length > 0) {
-        const newHost = newUserList[0];
-        newHost.state.isHost = true;
-    }
-
-    if (room.isGameRunning) {
-        rooms[room.id].isGameRunning = false;
-    }
+    const newUserList = leaveRoom(room, user);
 
     rooms[room.id].users = newUserList;
 
+    socket.leave(room.id);
+
     io.to(room.id).emit('updateLobby', rooms[room.id]);
+};
+
+const onDisconnectLobby = (socket, userId) => {
+    const user = users[userId];
+    if (!user) return;
+
+    const room = rooms[user.state.roomId];
+    if (!room) return;
+
+    const newUserList = leaveRoom(room, user);
+
+    rooms[room.id].users = newUserList;
 
     socket.leave(room.id);
+
+    io.to(room.id).emit('updateLobby', rooms[room.id]);
+
+    delete connections[userId];
+    delete users[userId];
+
+    console.log('Client disconnected', socket.id);
 };
 
 const onStartGame = (roomId, options) => {
@@ -280,6 +305,8 @@ const onStartNextRound = (socket, roomId) => {
 
 /// --- SOCKET --- ///
 io.on('connection', socket => {
+    console.log('Client connected', socket.id);
+
     // Generate a new User ID
     const userId = uuidv4();
 
@@ -340,28 +367,7 @@ io.on('connection', socket => {
 
     socket.on('startNextRound', roomId => onStartNextRound(socket, roomId));
 
-    socket.on('disconnect', () => {
-        const user = users[userId];
-        if (!user) return;
-
-        const room = rooms[user.state.roomId];
-        if (!room) return;
-
-        const newUserList = room.users.filter(() => {
-            return user.id !== userId;
-        });
-
-        rooms[room.id].users = newUserList;
-
-        socket.leave(room.id);
-
-        io.to(room.id).emit('updateLobby', rooms[room.id]);
-
-        delete connections[userId];
-        delete users[userId];
-
-        console.log('Client disconnected', socket.id);
-    });
+    socket.on('disconnect', () => onDisconnectLobby(socket, userId));
 });
 
 server.listen(PORT, () => {
