@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import { ErrorBoundary } from 'react-error-boundary';
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 
 import App from './App.jsx';
@@ -54,8 +55,10 @@ const router = createBrowserRouter([
 
 ReactDOM.createRoot(document.getElementById('root')).render(
     <React.StrictMode>
-        <SocketProvider>
-            <RouterProvider router={router} />
-        </SocketProvider>
+        <ErrorBoundary fallback={<div>Loading...</div>}>
+            <SocketProvider>
+                <RouterProvider router={router} />
+            </SocketProvider>
+        </ErrorBoundary>
     </React.StrictMode>
 );
