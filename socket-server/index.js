@@ -59,6 +59,7 @@ const defaultPlayersState = roomId => {
     room.users.map(user => {
         user.state.hasChosen = false;
         user.state.hasBlamed = false;
+        user.state.isReady = false;
         user.state.choice = undefined;
         user.state.blame = undefined;
     });
@@ -248,6 +249,18 @@ const onStartGame = (roomId, options) => {
     io.to(roomId).emit('updateLobby', rooms[roomId]);
 };
 
+const onReady = (roomId, userId) => {
+    const room = rooms[roomId];
+    if (!room) return;
+
+    const user = room.users.find(user => user.id === userId);
+    if (!user) return;
+
+    user.state.isReady = true;
+
+    io.to(roomId).emit('updateLobby', rooms[roomId]);
+};
+
 const onChoosePlayer = (socket, user) => {
     const roomId = user.state.roomId;
     const updatedChoice = updatePlayer(user);
@@ -350,6 +363,8 @@ io.on('connection', socket => {
     socket.on('startGame', ({ roomId, options }) =>
         onStartGame(roomId, options)
     );
+
+    socket.on('playerReady', ({ roomId, userId }) => onReady(roomId, userId));
 
     socket.on('choosePlayer', user => onChoosePlayer(socket, user));
 
