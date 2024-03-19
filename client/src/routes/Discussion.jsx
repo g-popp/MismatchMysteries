@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import QuestionCard from '../components/QuestionCard';
 import SelectedPlayerDisplay from '../components/SelectedPlayerDisplay';
 import VotingTable from '../components/VotingTable';
+import ReadyButton from '../components/ui/ReadyButton';
 import { SocketContext } from '../context/socket';
 import useReadyButton from '../hooks/useReadyButton';
 import { gameOptionsAtom } from '../store/game';
@@ -108,14 +109,10 @@ const Discussion = () => {
                                 question={questions.normalQuestion}
                             />
                         </div>
-                        <button
-                            className={`text-black text-center text-lg py-2 px-6 border border-black rounded shadow-sm shadow-black ${
-                                isReady ? 'bg-teal-600' : 'bg-zinc-500'
-                            }`}
-                            onClick={toggleReady}
-                        >
-                            Ready
-                        </button>
+                        <ReadyButton
+                            isReady={isReady}
+                            toggleReady={toggleReady}
+                        />
                     </>
                 )}
             </div>
