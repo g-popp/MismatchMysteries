@@ -1,7 +1,8 @@
 /* eslint-disable react/prop-types */
 import { colors } from '../../constants/colors';
+import { sortArray } from '../utils/sortArray';
 
-const groupPlayerChoices = playerChoices => {
+const createPlayerBundle = playerChoices => {
     return playerChoices.reduce((bundle, choice) => {
         const existingBundle = bundle.find(
             bundleItem => bundleItem[0].choice.name === choice.choice.name
@@ -16,9 +17,11 @@ const groupPlayerChoices = playerChoices => {
 };
 
 const VotingTableList = ({ playerChoices }) => {
-    const playerBundle = groupPlayerChoices(playerChoices);
+    const playerBundle = createPlayerBundle(playerChoices);
 
-    return playerBundle.map((bundle, colorIndex) => {
+    const sortedPlayerBundle = sortArray(playerBundle, 'length');
+
+    return sortedPlayerBundle.map((bundle, colorIndex) => {
         return bundle.map((player, playerIndex) => (
             <tr
                 key={playerIndex}
