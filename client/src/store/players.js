@@ -7,6 +7,7 @@ export const playerAtom = atom({
         roomId: undefined,
         isHost: false,
         isImposter: false,
+        isReady: false,
         hasChosen: false,
         hasBlamed: false,
         choice: undefined,

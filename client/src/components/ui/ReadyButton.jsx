@@ -1,4 +1,5 @@
-const ReadyButton = (isReady, toggleReady) => {
+// eslint-disable-next-line react/prop-types
+const ReadyButton = ({ isReady, toggleReady }) => {
     return (
         <button
             className={`text-black text-center text-lg py-2 px-6 border border-black rounded shadow-sm shadow-black ${
