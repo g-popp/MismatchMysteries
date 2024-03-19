@@ -5,6 +5,7 @@ import QuestionCard from '../components/QuestionCard';
 import SelectedPlayerDisplay from '../components/SelectedPlayerDisplay';
 import VotingTable from '../components/VotingTable';
 import { SocketContext } from '../context/socket';
+import useReadyButton from '../hooks/useReadyButton';
 import { gameOptionsAtom } from '../store/game';
 import { playerAtom } from '../store/players';
 import { questionsAtom } from '../store/questions';
@@ -21,6 +22,8 @@ const Discussion = () => {
     const [questions] = useAtom(questionsAtom);
 
     const [counter, setCounter] = useState(5);
+
+    const [isReady, toggleReady] = useReadyButton(socket, room.id);
 
     const choosenPlayer = room.users.find(
         user => user.id === ownPlayer?.state?.choice
@@ -73,7 +76,7 @@ const Discussion = () => {
 
     return (
         <>
-            <div className='flex flex-col items-center gap-24'>
+            <div className='flex flex-col items-center gap-16'>
                 <h1 className='text-2xl underline'>Discussion Phase</h1>
 
                 {counter > 0 ? (
@@ -105,6 +108,14 @@ const Discussion = () => {
                                 question={questions.normalQuestion}
                             />
                         </div>
+                        <button
+                            className={`text-black text-center text-lg py-2 px-6 border border-black rounded shadow-sm shadow-black ${
+                                isReady ? 'bg-teal-600' : 'bg-zinc-500'
+                            }`}
+                            onClick={toggleReady}
+                        >
+                            Ready
+                        </button>
                     </>
                 )}
             </div>
