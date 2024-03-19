@@ -5,6 +5,7 @@ import QuestionCard from '../components/QuestionCard';
 import SelectedPlayerDisplay from '../components/SelectedPlayerDisplay';
 import VotingTable from '../components/VotingTable';
 import ReadyButton from '../components/ui/ReadyButton';
+import ReadyText from '../components/ui/ReadyText';
 import { SocketContext } from '../context/socket';
 import useReadyButton from '../hooks/useReadyButton';
 import { gameOptionsAtom } from '../store/game';
@@ -24,7 +25,7 @@ const Discussion = () => {
 
     const [counter, setCounter] = useState(5);
 
-    const [isReady, toggleReady] = useReadyButton(socket, room.id);
+    const [isReady, toggleReady] = useReadyButton(socket, room.id, ownPlayer);
 
     const choosenPlayer = room.users.find(
         user => user.id === ownPlayer?.state?.choice
@@ -109,6 +110,7 @@ const Discussion = () => {
                                 question={questions.normalQuestion}
                             />
                         </div>
+                        <ReadyText users={room.users} />
                         <ReadyButton
                             isReady={isReady}
                             toggleReady={toggleReady}
