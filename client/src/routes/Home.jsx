@@ -103,7 +103,7 @@ const Home = () => {
     return (
         <div className='flex flex-col p-8 items-center gap-8'>
             <h1 className='text-6xl underline py-20 text-center'>
-                Mismatched Mysteries
+                Friends Don&apos;t Lie
             </h1>
             <h2 className='text-xl mb-8'>Enter a Name to start a game!</h2>
             <div>

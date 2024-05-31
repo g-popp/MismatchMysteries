@@ -14,7 +14,7 @@ const Layout = () => {
                     className='text-3xl underline basis-4/5 text-center mb-12'
                     style={{ color: color }}
                 >
-                    Mismatched Mysteries
+                    Friends Don&apos;t Lie
                 </h1>
             </Link>
 

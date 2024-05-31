@@ -97,7 +97,7 @@ const Reveal = () => {
             ) : (
                 <>
                     <h2 className=' flex flex-col gap-8 text-3xl items-center'>
-                        The Mismatch is:{' '}
+                        The Imposter is:{' '}
                         <span className={`${revealColor} text-8xl`}>
                             {imposter?.name}
                         </span>
