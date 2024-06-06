@@ -14,6 +14,7 @@ import Game from './routes/Game.jsx';
 import Join from './routes/Join.jsx';
 import Lobby from './routes/Lobby.jsx';
 import Reveal from './routes/Reveal.jsx';
+import StartGame from './routes/StartGame.jsx';
 
 const router = createBrowserRouter([
     {
@@ -31,6 +32,10 @@ const router = createBrowserRouter([
             {
                 path: '/join',
                 element: <Join />
+            },
+            {
+                path: '/startGame',
+                element: <StartGame />
             },
             {
                 path: '/game',
