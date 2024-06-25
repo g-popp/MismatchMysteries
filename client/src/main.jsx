@@ -11,10 +11,10 @@ import './index.css';
 import Blame from './routes/Blame.jsx';
 import Discussion from './routes/Discussion.jsx';
 import Game from './routes/Game.jsx';
+import Host from './routes/Host.jsx';
 import Join from './routes/Join.jsx';
-import Lobby from './routes/Lobby.jsx';
+import Lobby from './routes/Lobby.old.jsx';
 import Reveal from './routes/Reveal.jsx';
-import StartGame from './routes/StartGame.jsx';
 
 const router = createBrowserRouter([
     {
@@ -34,8 +34,8 @@ const router = createBrowserRouter([
                 element: <Join />
             },
             {
-                path: '/startGame',
-                element: <StartGame />
+                path: '/host',
+                element: <Host />
             },
             {
                 path: '/game',

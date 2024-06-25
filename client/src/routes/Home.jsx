@@ -52,7 +52,7 @@ const Home = () => {
 
     useEffect(() => {
         if (playerSet && room.id) {
-            navigate(`/startGame/`);
+            navigate(`/join`);
         }
     }, [playerSet, room]);
 
