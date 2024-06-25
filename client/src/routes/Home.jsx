@@ -61,7 +61,7 @@ const Home = () => {
             <h1 className='text-6xl text-black underline text-center'>
                 Friends Don&apos;t Lie
             </h1>
-            <img src={Logo} className=' w-10/12' />
+            <img src={Logo} className='w-10/12 lg:w-1/3' />
             <Button color='#1B998B' handler={e => handleNewGame(e)}>
                 Play Now
             </Button>
