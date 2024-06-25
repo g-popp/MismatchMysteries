@@ -34,7 +34,7 @@ const Join = () => {
                     color={'#1B998B'}
                     className='text-white text-center text-xl py-4 w-full border border-black rounded shadow-sm shadow-black'
                 >
-                    Join Room
+                    Join Game
                 </Button>
             </StartGame>
         </div>
