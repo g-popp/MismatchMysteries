@@ -13,12 +13,14 @@ const Host = () => {
                     Create a room to play together with your friends. Just share
                     the room ID, which you get on the next screen.
                 </h1>
-                <TextInput
-                    placeholder={'Enter your Name'}
-                    value={playerName}
-                    setValue={e => setPlayerName(e.target.value)}
-                    displayName={'Your Name'}
-                />
+                <div>
+                    <TextInput
+                        placeholder={'Enter your Name'}
+                        value={playerName}
+                        setValue={e => setPlayerName(e.target.value)}
+                        displayName={'Your Name'}
+                    />
+                </div>
                 <Button
                     color={'#1B998B'}
                     className='text-white text-center text-xl py-4 w-full border border-black rounded shadow-sm shadow-black'
