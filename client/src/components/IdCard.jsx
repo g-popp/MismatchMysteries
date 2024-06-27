@@ -5,8 +5,8 @@ import settings from '../assets/setting.png';
 const IdCard = ({ gameId, host, copyIdToClipboard, openOptions }) => {
     return (
         <div className='flex flex-row gap-6 items-center'>
-            <h2 className='text-3xl' style={{ fontFamily: 'Roboto' }}>
-                ID: {gameId}
+            <h2 className='text-2xl text-gray-500'>
+                ID: <span className='text-black'>{gameId}</span>
             </h2>
             <div
                 className='border border-black opacity-50 bg-[#1B998B] p-2 rounded-lg shadow-md hover:cursor-pointer'

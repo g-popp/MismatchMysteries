@@ -134,10 +134,10 @@ const Lobby = () => {
                 close={() => setShowOptions(false)}
             />
 
-            <div className='border rounded-lg'>
+            <div className='border rounded-lg border-black shadow-inner'>
                 <h2 className='text-2xl p-4'>Players:</h2>
                 <ul
-                    className='flex flex-col gap-2 w-64 h-32  items-center m-2 overflow-y-scroll'
+                    className='flex flex-col gap-2 w-64 h-32 items-center m-2 overflow-y-scroll'
                     ref={parent}
                 >
                     <PlayerCard
