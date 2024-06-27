@@ -44,10 +44,12 @@ const SettingsModal = ({ isOpen, close }) => {
                 className='bg-black p-10 border rounded-lg relative w-4/5 max-w-3xl max-h-screen-xl z-20'
             >
                 <form className='flex flex-col gap-10'>
-                    <h2 className='text-4xl mx-auto underline'>Options</h2>
+                    <h2 className='text-4xl mx-auto underline text-teal-600'>
+                        Options
+                    </h2>
 
                     <div>
-                        <p className='mb-2 text-md text-white text-center'>
+                        <p className='mb-4 text-sm text-white text-center'>
                             Choose Game Mode:
                         </p>
                         <div className='flex justify-around'>
@@ -55,7 +57,7 @@ const SettingsModal = ({ isOpen, close }) => {
                                 className={
                                     !gameOptions.couchMode
                                         ? 'text-gray-400'
-                                        : ''
+                                        : 'text-white'
                                 }
                             >
                                 Couch
@@ -71,7 +73,9 @@ const SettingsModal = ({ isOpen, close }) => {
                             </label>
                             <p
                                 className={
-                                    gameOptions.couchMode ? 'text-gray-400' : ''
+                                    gameOptions.couchMode
+                                        ? 'text-gray-400'
+                                        : 'text-white'
                                 }
                             >
                                 Online
@@ -80,11 +84,11 @@ const SettingsModal = ({ isOpen, close }) => {
                     </div>
 
                     <div className='mx-auto'>
-                        <label className='block mb-2 text-md text-white'>
+                        <label className='block mb-4 text-sm text-white'>
                             Choose number of Imposter(s):
                         </label>
 
-                        <div className='relative flex items-center max-w-[11rem] mx-auto'>
+                        <div className='relative flex items-center max-w-[11rem] mx-auto mb-4'>
                             <MinusButton decrease={decreaseNumberOfImposters} />
 
                             <input
