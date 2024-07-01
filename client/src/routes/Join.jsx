@@ -78,6 +78,7 @@ const Join = () => {
     }, [isPlayerSet, room]);
 
     return (
+<<<<<<< HEAD
         <div className='flex flex-col h-full justify-between items-center'>
             <StartGame>
                 <div class='flex flex-col gap-14'>
@@ -102,13 +103,45 @@ const Join = () => {
                 </div>
                 <Button handler={e => handleJoinGame(e)}>Join Game</Button>
             </StartGame>
+=======
+        <StartGame>
+            <h1 className='text-xl text-center'>
+                Join a game simply entering the room ID your friends shared with
+                you.
+            </h1>
+            <div>
+                <TextInput
+                    placeholder={'Enter your Name'}
+                    value={ownPlayer.name}
+                    setValue={e =>
+                        setOwnPlayer({ ...ownPlayer, name: e.target.value })
+                    }
+                    displayName={'Your Name'}
+                />
+            </div>
+            <div>
+                <TextInput
+                    placeholder={'Paste the room id'}
+                    value={room.id}
+                    setValue={e => setRoom({ ...room, id: e.target.value })}
+                    displayName={'Room ID'}
+                />
+            </div>
+            <Button
+                color={'#1B998B'}
+                className='text-white text-center text-xl py-4 w-full border border-black rounded shadow-sm shadow-black'
+                handler={e => handleJoinGame(e)}
+            >
+                Join Game
+            </Button>
+>>>>>>> 6f62b58 ([frontend] refactor: remove unnecessary div element)
             <Toast
                 message={toastMessage}
                 type={toastType}
                 show={showToast}
                 onClose={hideToast}
             />
-        </div>
+        </StartGame>
     );
 };
 
