@@ -5,7 +5,7 @@ const Button = ({ color, handler, children }) => {
             style={{ backgroundColor: color }}
             type='button'
             className={
-                'text-black text-center text-xl py-4 px-6 border border-black rounded shadow-sm shadow-black '
+                'w-full text-center text-3xl py-4 px-6 rounded bg-teal-600 hover:bg-teal-700 border-teal-800 border-2 text-white transition bowlby-one'
             }
         >
             {children}
