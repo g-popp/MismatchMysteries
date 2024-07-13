@@ -74,13 +74,13 @@ const Host = () => {
     }, [playerSet, room]);
 
     return (
-        <div className='flex flex-col gap-20 items-center'>
+        <div className='flex flex-col h-full justify-between items-center'>
             <StartGame>
-                <h1 className='text-xl text-center'>
-                    Create a room to play together with your friends. Just share
-                    the room ID, which you get on the next screen.
-                </h1>
-                <div>
+                <div class='flex flex-col gap-14'>
+                    <p className='text-xl text-center'>
+                        Create a room to play together with your friends. Just
+                        share the room ID, which you get on the next screen.
+                    </p>
                     <TextInput
                         placeholder={'Enter your Name'}
                         value={ownPlayer.name}
@@ -90,13 +90,7 @@ const Host = () => {
                         displayName={'Your Name'}
                     />
                 </div>
-                <Button
-                    color={'#1B998B'}
-                    className='text-white text-center text-xl py-4 w-full border border-black rounded shadow-sm shadow-black'
-                    handler={e => handleNewGame(e)}
-                >
-                    Create Game
-                </Button>
+                <Button handler={e => handleNewGame(e)}>Create Game</Button>
             </StartGame>
             <Toast
                 message={toastMessage}

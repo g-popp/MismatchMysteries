@@ -78,13 +78,13 @@ const Join = () => {
     }, [isPlayerSet, room]);
 
     return (
-        <div className='flex flex-col gap-20 items-center'>
+        <div className='flex flex-col h-full justify-between items-center'>
             <StartGame>
-                <h1 className='text-xl text-center'>
-                    Join a game simply entering the room ID your friends shared
-                    with you.
-                </h1>
-                <div>
+                <div class='flex flex-col gap-14'>
+                    <p className='text-xl text-center'>
+                        Join a game simply entering the room ID your friends
+                        shared with you.
+                    </p>
                     <TextInput
                         placeholder={'Enter your Name'}
                         value={ownPlayer.name}
@@ -93,8 +93,6 @@ const Join = () => {
                         }
                         displayName={'Your Name'}
                     />
-                </div>
-                <div>
                     <TextInput
                         placeholder={'Paste the room id'}
                         value={room.id}
@@ -102,13 +100,7 @@ const Join = () => {
                         displayName={'Room ID'}
                     />
                 </div>
-                <Button
-                    color={'#1B998B'}
-                    className='text-white text-center text-xl py-4 w-full border border-black rounded shadow-sm shadow-black'
-                    handler={e => handleJoinGame(e)}
-                >
-                    Join Game
-                </Button>
+                <Button handler={e => handleJoinGame(e)}>Join Game</Button>
             </StartGame>
             <Toast
                 message={toastMessage}

@@ -5,13 +5,13 @@ const StartGame = ({ children }) => {
     const location = useLocation();
 
     const activeButton =
-        'text-center text-xl py-4 px-10 text-white bg-teal-600 border border-black rounded-full shadow-sm shadow-black ';
+        'text-center text-xl py-3 px-10 text-white bg-teal-600 border-teal-800 hover:bg-teal-700 border-2 rounded-full shadow-md shadow-teal-700/50 transition';
 
     const inactiveButton =
-        "'text-center text-xl py-4 px-10 border text-teal-600 bg-white border-black rounded-full shadow-sm shadow-black '";
+        'text-center text-xl py-3 px-10 text-teal-600 bg-white border-teal-800 hover:text-teal-700 hover:bg-teal-50 border-2 rounded-full transition';
 
     return (
-        <div className='flex flex-col gap-20 items-center'>
+        <div className='flex flex-col justify-between h-full items-center'>
             <div className='flex gap-8'>
                 <Link
                     to='/join'
