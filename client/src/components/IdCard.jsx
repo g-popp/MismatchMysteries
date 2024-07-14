@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import { GearSix, CopySimple } from '@phosphor-icons/react';
+import { CopySimple, GearSix } from '@phosphor-icons/react';
 
 const IdCard = ({ gameId, host, copyIdToClipboard, openOptions }) => {
     return (
@@ -9,7 +9,7 @@ const IdCard = ({ gameId, host, copyIdToClipboard, openOptions }) => {
                 <span className='text-neutral-600'>{gameId}</span>
             </div>
 
-            <div class='flex gap-2'>
+            <div className='flex gap-2'>
                 <button
                     className='border-2 border-teal-700 bg-white p-2 rounded-lg shadow-sm'
                     onClick={copyIdToClipboard}
