@@ -1,31 +1,38 @@
 /* eslint-disable react/prop-types */
-import clipboard from '../assets/clipboard.png';
-import settings from '../assets/setting.png';
+import { GearSix, CopySimple } from '@phosphor-icons/react';
 
 const IdCard = ({ gameId, host, copyIdToClipboard, openOptions }) => {
     return (
-        <div className='flex flex-row gap-6 items-center'>
-            <h2 className='text-2xl text-gray-500'>
-                ID: <span className='text-black'>{gameId}</span>
-            </h2>
-            <div
-                className='border border-black opacity-50 bg-[#1B998B] p-2 rounded-lg shadow-md hover:cursor-pointer'
-                onClick={copyIdToClipboard}
-            >
-                <img src={clipboard} alt='copy link' className='h-5' />
+        <div className='flex gap-2 justify-between items-center w-full'>
+            <div>
+                <h2 className='text-xl text-teal-700'>Game lobby</h2>
+                <span className='text-neutral-600'>{gameId}</span>
             </div>
-            {host && (
-                <div
-                    className='border border-black opacity-70 bg-[#FFFD82] p-2 rounded-lg shadow-md hover:cursor-pointer'
-                    onClick={openOptions}
+
+            <div class='flex gap-2'>
+                <button
+                    className='border-2 border-teal-700 bg-white p-2 rounded-lg shadow-sm'
+                    onClick={copyIdToClipboard}
                 >
-                    <img
-                        src={settings}
-                        alt='settings link'
-                        className=' h-5 opacity-60'
-                    />
-                </div>
-            )}
+                    <CopySimple
+                        weight='bold'
+                        size='1.25rem'
+                        className='fill-teal-800 color-teal-800'
+                    ></CopySimple>
+                </button>
+                {host && (
+                    <div
+                        className='border-2 border-teal-700 bg-white p-2 rounded-lg shadow-sm'
+                        onClick={openOptions}
+                    >
+                        <GearSix
+                            weight='bold'
+                            size='1.25rem'
+                            className='fill-teal-800 color-teal-800'
+                        ></GearSix>
+                    </div>
+                )}
+            </div>
         </div>
     );
 };
