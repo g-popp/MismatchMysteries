@@ -119,56 +119,58 @@ const Lobby = () => {
     };
 
     return (
-        <div className='flex flex-col gap-20 items-center'>
-            <h1 className='text-3xl underline'>Game Lobby</h1>
+        <div className='flex flex-col justify-between gap-4 h-full w-full items-center'>
+            <div className='flex flex-col gap-8 w-full'>
+                <IdCard
+                    gameId={room.id}
+                    host={ownPlayer.state.isHost}
+                    copyIdToClipboard={copyIdToClipboard}
+                    openOptions={() => setShowOptions(true)}
+                />
 
-            <IdCard
-                gameId={room.id}
-                host={ownPlayer.state.isHost}
-                copyIdToClipboard={copyIdToClipboard}
-                openOptions={() => setShowOptions(true)}
-            />
+                <SettingsModal
+                    isOpen={showOptions}
+                    close={() => setShowOptions(false)}
+                />
 
-            <SettingsModal
-                isOpen={showOptions}
-                close={() => setShowOptions(false)}
-            />
-
-            <div className='border rounded-lg border-black shadow-inner'>
-                <h2 className='text-2xl p-4'>Players:</h2>
-                <ul
-                    className='flex flex-col gap-2 w-64 h-32 items-center m-2 overflow-y-scroll'
-                    ref={parent}
-                >
-                    <PlayerCard
-                        name={ownPlayer.name}
-                        host={ownPlayer.state.isHost}
-                        backgroundColor='#FFFD82'
-                    />
-                    {players.map(player => (
-                        <PlayerCard
-                            key={player.id}
-                            name={player.name}
-                            host={player.state.isHost}
-                            backgroundColor='#FF9B71'
-                        />
-                    ))}
-                </ul>
-            </div>
-            <div className='flex flex-col gap-6'>
-                {ownPlayer.state.isHost && (
-                    <Button
-                        handler={e => startGame(e)}
-                        color='#1B998B'
-                        className='text-black text-xl py-4 px-6 border border-black rounded shadow-sm shadow-black'
+                <div class='w-full flex flex-col gap-1'>
+                    <h2 className='text-xl text-teal-700'>Players</h2>
+                    <ul
+                        className='flex flex-col gap-2 items-center overflow-y-auto'
+                        ref={parent}
                     >
-                        Start Game
-                    </Button>
+                        <PlayerCard
+                            name={ownPlayer.name}
+                            host={ownPlayer.state.isHost}
+                            backgroundColor='rgb(52 211 153)'
+                        />
+                        {players.map(player => (
+                            <PlayerCard
+                                key={player.id}
+                                name={player.name}
+                                host={player.state.isHost}
+                                backgroundColor={
+                                    player.state.isHost
+                                        ? 'rgb(103 232 249)'
+                                        : 'rgb(254 240 138)'
+                                }
+                            />
+                        ))}
+                    </ul>
+                </div>
+            </div>
+
+            <div className='flex flex-col gap-4 w-full'>
+                {ownPlayer.state.isHost && (
+                    <Button handler={e => startGame(e)}>Start Game</Button>
                 )}
 
-                <Button color='#E84855' handler={e => onLeaveLobby(e)}>
+                <button
+                    onClick={e => onLeaveLobby(e)}
+                    className='text-2xl font-bold text-neutral-600 bg-white/80 border-2 rounded-md border-neutral-400 p-2'
+                >
                     Leave
-                </Button>
+                </button>
             </div>
             <Toast
                 message={toastMessage}
