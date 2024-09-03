@@ -45,7 +45,7 @@ const Host = () => {
 
         const newLobbyCode = lobbyId.slice(0, 6);
         setLobbyCode(newLobbyCode);
-        setPlayer(player);
+        setPlayer({ ...player, id: playerId, isHost: true });
 
         db.transact([
             tx.lobby[lobbyId].update({

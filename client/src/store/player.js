@@ -2,5 +2,6 @@ import { atom } from 'jotai';
 
 export const playerAtom = atom({
     name: undefined,
-    id: undefined
+    id: undefined,
+    isHost: false
 });
