@@ -1,21 +1,22 @@
 import { useAtom } from 'jotai';
-import { useCallback, useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import React, { useCallback, useEffect } from 'react';
+import instantDBAtom from '../store/db';
+import { lobbyCodeAtom, lobbyStateAtom } from '../store/lobby';
 import Button from '../components/Button';
 import StartGame from '../components/StartGame';
 import Toast from '../components/Toast';
-import TextInput from '../components/ui/TextInput';
-import { SocketContext } from '../context/socket';
 import { useToast } from '../hooks/useToast';
-import { playerAtom } from '../store/players';
-import { roomAtom } from '../store/room';
+import TextInput from '../components/ui/TextInput';
+import { playerAtom } from '../store/player';
+import { tx, id } from '@instantdb/react';
 
 const Host = () => {
-    const socket = useContext(SocketContext);
-
     const navigate = useNavigate();
-    const [ownPlayer, setOwnPlayer] = useAtom(playerAtom);
-    const [room, setRoom] = useAtom(roomAtom);
+
+    const [lobbyCode, setLobbyCode] = useAtom(lobbyCodeAtom);
+    const [db] = useAtom(instantDBAtom);
+    const [player, setPlayer] = useAtom(playerAtom);
 
     const [
         showToast,
@@ -25,72 +26,47 @@ const Host = () => {
         showToastWithMessage
     ] = useToast();
 
-    const [playerSet, setPlayerSet] = useState(false);
+    const createLobby = async () => {
+        const lobbyId = id();
+        const playerId = id();
 
-    const setToastError = useCallback(
-        () => showToastWithMessage('Please enter a name', 'error'),
-        [showToastWithMessage]
-    );
+        setLobbyCode(lobbyId.slice(0, 6));
+        setPlayer({ ...player, id: playerId });
 
-    const handleNewGame = useCallback(
-        e => {
-            e.preventDefault();
-            if (!ownPlayer.name) {
-                setToastError();
-            } else {
-                socket.emit('createLobby', ownPlayer.name);
-            }
-        },
-        [ownPlayer.name, setToastError, socket]
-    );
-
-    useEffect(() => {
-        if (socket) {
-            socket.on('error', error => {
-                console.log('Host Lobby error: ', error);
-            });
-
-            socket.on('lobbyCreated', room => {
-                setRoom(room);
-
-                socket.on('playerInfo', player => {
-                    setOwnPlayer(player);
-                    setPlayerSet(true);
-                });
-            });
-
-            return () => {
-                socket.off('lobbyCreated');
-                socket.off('playerInfo');
-                socket.off('error');
-            };
+        if (!player.name) {
+            showToastWithMessage('Please enter a name', 'error');
+            return;
         }
-    }, [socket]);
 
-    useEffect(() => {
-        if (playerSet && room.id) {
-            navigate(`/lobby/${room.id}`);
-        }
-    }, [playerSet, room]);
+        await db.transact([
+            tx.lobby[lobbyId].update({
+                lobbyCode: lobbyCode,
+                players: [{ name: player.name, id: player.id, host: true }],
+                status: 'waiting'
+            })
+        ]);
+
+        navigate(`/lobby/${lobbyCode}`);
+    };
 
     return (
         <div className='flex flex-col h-full justify-between items-center'>
             <StartGame>
-                <div class='flex flex-col gap-14'>
+                <div className='flex flex-col gap-14'>
                     <p className='text-xl text-center'>
                         Create a room to play together with your friends. Just
                         share the room ID, which you get on the next screen.
                     </p>
                     <TextInput
                         placeholder={'Enter your Name'}
-                        value={ownPlayer.name}
+                        value={player.name}
                         setValue={e =>
-                            setOwnPlayer({ ...ownPlayer, name: e.target.value })
+                            setPlayer({ ...player, name: e.target.value })
                         }
                         displayName={'Your Name'}
                     />
                 </div>
-                <Button handler={e => handleNewGame(e)}>Create Game</Button>
+                <Button handler={createLobby}>Create Game</Button>
             </StartGame>
             <Toast
                 message={toastMessage}
