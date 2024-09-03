@@ -80,7 +80,7 @@ const Join = () => {
     return (
         <div className='flex flex-col h-full justify-between items-center'>
             <StartGame>
-                <div class='flex flex-col gap-14'>
+                <div className='flex flex-col gap-14'>
                     <p className='text-xl text-center'>
                         Join a game simply entering the room ID your friends
                         shared with you.

@@ -133,7 +133,7 @@ const Lobby = () => {
                     close={() => setShowOptions(false)}
                 />
 
-                <div class='w-full flex flex-col gap-1'>
+                <div className='w-full flex flex-col gap-1'>
                     <h2 className='text-xl text-teal-700'>Players</h2>
                     <ul
                         className='flex flex-col gap-2 items-center overflow-y-auto'

@@ -5,7 +5,7 @@ import Logo from '../assets/logo.svg';
 const Home = () => {
     return (
         <div className='flex flex-col p-12 items-center justify-between h-full'>
-            <div class='flex flex-col items-center gap-8 pt-20'>
+            <div className='flex flex-col items-center gap-8 pt-20'>
                 <h1 className='text-6xl text-center bg-clip-text text-transparent bg-gradient-to-b from-teal-600 to-teal-500'>
                     Friends Don&apos;t Lie
                 </h1>
