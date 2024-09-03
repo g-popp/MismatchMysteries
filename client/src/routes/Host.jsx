@@ -44,13 +44,14 @@ const Host = () => {
         }
 
         const newLobbyCode = lobbyId.slice(0, 6);
+        const updatedPlayer = { ...player };
         setLobbyCode(newLobbyCode);
-        setPlayer({ ...player, id: playerId, isHost: true });
+        setPlayer(updatedPlayer);
 
         db.transact([
             tx.lobby[lobbyId].update({
                 lobbyCode: newLobbyCode,
-                players: [{ player }],
+                players: [updatedPlayer],
                 status: 'waiting'
             })
         ]);
@@ -62,7 +63,7 @@ const Host = () => {
         if (lobby?.lobbyCode === lobbyCode) {
             navigate(`/lobby/${lobbyCode}`);
         }
-    }, [data, isLoading, lobbyCode]);
+    }, [data, lobbyCode]);
 
     if (error)
         return (
@@ -88,10 +89,7 @@ const Host = () => {
                         displayName={'Your Name'}
                     />
                 </div>
-                <Button handler={createLobby}>
-                    {/* {isLoading ? 'Loading...' : 'Create Game'} */}
-                    Create Game
-                </Button>
+                <Button handler={createLobby}>Create Game</Button>
             </StartGame>
             <Toast
                 message={toastMessage}
