@@ -11,12 +11,23 @@ import TextInput from '../components/ui/TextInput';
 import { playerAtom } from '../store/player';
 import { tx, id } from '@instantdb/react';
 
+const lobbyId = id();
+const playerId = id();
+
 const Host = () => {
     const navigate = useNavigate();
 
     const [lobbyCode, setLobbyCode] = useAtom(lobbyCodeAtom);
     const [db] = useAtom(instantDBAtom);
     const [player, setPlayer] = useAtom(playerAtom);
+
+    const { data, isLoading, error } = db.useQuery({
+        lobby: {
+            $: {
+                where: { id: lobbyId }
+            }
+        }
+    });
 
     const [
         showToast,
@@ -26,28 +37,39 @@ const Host = () => {
         showToastWithMessage
     ] = useToast();
 
-    const createLobby = async () => {
-        const lobbyId = id();
-        const playerId = id();
-
-        setLobbyCode(lobbyId.slice(0, 6));
-        setPlayer({ ...player, id: playerId });
-
+    const createLobby = () => {
         if (!player.name) {
             showToastWithMessage('Please enter a name', 'error');
             return;
         }
 
-        await db.transact([
+        const newLobbyCode = lobbyId.slice(0, 6);
+        setLobbyCode(newLobbyCode);
+        setPlayer(player);
+
+        db.transact([
             tx.lobby[lobbyId].update({
-                lobbyCode: lobbyCode,
-                players: [{ name: player.name, id: player.id, host: true }],
+                lobbyCode: newLobbyCode,
+                players: [{ player }],
                 status: 'waiting'
             })
         ]);
-
-        navigate(`/lobby/${lobbyCode}`);
     };
+
+    useEffect(() => {
+        const [lobby] = data?.lobby || [];
+
+        if (lobby?.lobbyCode === lobbyCode) {
+            navigate(`/lobby/${lobbyCode}`);
+        }
+    }, [data, isLoading, lobbyCode]);
+
+    if (error)
+        return (
+            <div>
+                Error: <p>{error.message}</p>
+            </div>
+        );
 
     return (
         <div className='flex flex-col h-full justify-between items-center'>
@@ -66,7 +88,10 @@ const Host = () => {
                         displayName={'Your Name'}
                     />
                 </div>
-                <Button handler={createLobby}>Create Game</Button>
+                <Button handler={createLobby}>
+                    {/* {isLoading ? 'Loading...' : 'Create Game'} */}
+                    Create Game
+                </Button>
             </StartGame>
             <Toast
                 message={toastMessage}
