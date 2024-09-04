@@ -29,7 +29,8 @@ const Lobby = () => {
         lobby: {
             $: {
                 where: { lobbyCode }
-            }
+            },
+            players: {}
         }
     });
 
@@ -55,6 +56,8 @@ const Lobby = () => {
 
     const onLeaveLobby = () => {
         // if only one player in the lobby, delete the lobby
+
+        db.transact([tx.players[player.id].delete()]);
         if (lobby.players.length === 1) {
             db.transact([tx.lobby[lobby.id].delete()]);
 
@@ -106,17 +109,17 @@ const Lobby = () => {
                             host={player.isHost}
                             backgroundColor='rgb(52 211 153)'
                         /> */}
-                            {lobby.players.map(user => (
+                            {lobby.players.map((user, index) => (
                                 <PlayerCard
                                     key={user.id}
                                     name={user.name}
-                                    host={isHost}
+                                    host={index === 0}
                                     backgroundColor={
-                                        isHost
-                                            ? 'rgb(103 232 249)'
+                                        index === 0
+                                            ? 'rgb(103 232 249)' // Host color
                                             : user.id === player.id
-                                              ? 'rgb(52 211 153)'
-                                              : 'rgb(254 240 138)'
+                                              ? 'rgb(52 211 153)' // Current player color
+                                              : 'rgb(254 240 138)' // Other players color
                                     }
                                 />
                             ))}

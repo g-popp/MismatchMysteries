@@ -12,7 +12,6 @@ import { playerAtom } from '../store/player';
 import { tx, id } from '@instantdb/react';
 
 const lobbyId = id();
-const playerId = id();
 
 const Host = () => {
     const navigate = useNavigate();
@@ -38,22 +37,25 @@ const Host = () => {
     ] = useToast();
 
     const createLobby = () => {
+        const playerId = id();
         if (!player.name) {
             showToastWithMessage('Please enter a name', 'error');
             return;
         }
 
         const newLobbyCode = lobbyId.slice(0, 6);
-        const updatedPlayer = { ...player };
+        const updatedPlayer = { ...player, id: playerId };
         setLobbyCode(newLobbyCode);
         setPlayer(updatedPlayer);
 
         db.transact([
-            tx.lobby[lobbyId].update({
-                lobbyCode: newLobbyCode,
-                players: [updatedPlayer],
-                status: 'waiting'
-            })
+            tx.players[playerId].update(updatedPlayer),
+            tx.lobby[lobbyId]
+                .update({
+                    lobbyCode: newLobbyCode,
+                    status: 'waiting'
+                })
+                .link({ players: updatedPlayer.id })
         ]);
     };
 
