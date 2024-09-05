@@ -15,6 +15,7 @@ import Host from './routes/Host.jsx';
 import Join from './routes/Join.jsx';
 import Lobby from './routes/Lobby.jsx';
 import Reveal from './routes/Reveal.jsx';
+import EditQuestions from './routes/EditQuestions.jsx';
 
 const router = createBrowserRouter([
     {
@@ -52,6 +53,10 @@ const router = createBrowserRouter([
             {
                 path: '/reveal',
                 element: <Reveal />
+            },
+            {
+                path: '/edit-questions',
+                element: <EditQuestions />
             }
         ]
     }
