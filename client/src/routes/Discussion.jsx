@@ -78,8 +78,8 @@ const Discussion = () => {
 
     return (
         <>
-            <div className='flex flex-col items-center gap-16'>
-                <h1 className='text-2xl underline'>Discussion Phase</h1>
+            <div className='flex flex-col items-center gap-8'>
+                <h1 className='text-xl underline'>Discussion Phase</h1>
 
                 {counter > 0 ? (
                     <div className='flex flex-col justify-center gap-10 mt-6 text-center'>
@@ -104,30 +104,32 @@ const Discussion = () => {
                         )}
 
                         <div>
-                            <h2 className='text-2xl mb-4'>Real Question:</h2>
+                            <h2 className='text-xl mb-2'>Real Question:</h2>
                             <QuestionCard
                                 size={'small'}
                                 question={questions.normalQuestion}
                             />
                         </div>
                         <ReadyText users={room.users} />
-                        <ReadyButton
-                            isReady={isReady}
-                            toggleReady={toggleReady}
-                        />
+                        <div className='flex justify-between gap-8'>
+                            <ReadyButton
+                                isReady={isReady}
+                                toggleReady={toggleReady}
+                            />
+                            {!counter > 0 && ownPlayer.state.isHost && (
+                                <button
+                                    className={`${
+                                        isReady ? 'bg-teal-600' : 'bg-zinc-500'
+                                    } text-black text-center text-lg py-2 px-6 border border-black rounded shadow-sm shadow-black`}
+                                    onClick={e => startBlamePhase(e)}
+                                >
+                                    Next
+                                </button>
+                            )}
+                        </div>
                     </>
                 )}
             </div>
-            {!counter > 0 && ownPlayer.state.isHost && (
-                <button
-                    className={
-                        'text-black text-center text-lg py-2 px-6 border border-black rounded shadow-sm shadow-black bg-zinc-500 mt-14'
-                    }
-                    onClick={e => startBlamePhase(e)}
-                >
-                    Next
-                </button>
-            )}
         </>
     );
 };

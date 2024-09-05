@@ -119,58 +119,60 @@ const Lobby = () => {
     };
 
     return (
-        <div className='flex flex-col justify-between gap-4 h-full w-full items-center'>
-            <div className='flex flex-col gap-8 w-full'>
-                <IdCard
-                    gameId={room.id}
-                    host={ownPlayer.state.isHost}
-                    copyIdToClipboard={copyIdToClipboard}
-                    openOptions={() => setShowOptions(true)}
-                />
+        <>
+            <div className='flex flex-col justify-between gap-4 h-full w-full items-center'>
+                <div className='flex flex-col gap-8 w-full'>
+                    <IdCard
+                        gameId={room.id}
+                        host={ownPlayer.state.isHost}
+                        copyIdToClipboard={copyIdToClipboard}
+                        openOptions={() => setShowOptions(true)}
+                    />
 
-                <SettingsModal
-                    isOpen={showOptions}
-                    close={() => setShowOptions(false)}
-                />
+                    <SettingsModal
+                        isOpen={showOptions}
+                        close={() => setShowOptions(false)}
+                    />
 
-                <div class='w-full flex flex-col gap-1'>
-                    <h2 className='text-xl text-teal-700'>Players</h2>
-                    <ul
-                        className='flex flex-col gap-2 items-center overflow-y-auto'
-                        ref={parent}
-                    >
-                        <PlayerCard
-                            name={ownPlayer.name}
-                            host={ownPlayer.state.isHost}
-                            backgroundColor='rgb(52 211 153)'
-                        />
-                        {players.map(player => (
+                    <div class='w-full flex flex-col gap-1'>
+                        <h2 className='text-xl text-teal-700'>Players</h2>
+                        <ul
+                            className='flex flex-col gap-2 items-center overflow-y-auto'
+                            ref={parent}
+                        >
                             <PlayerCard
-                                key={player.id}
-                                name={player.name}
-                                host={player.state.isHost}
-                                backgroundColor={
-                                    player.state.isHost
-                                        ? 'rgb(103 232 249)'
-                                        : 'rgb(254 240 138)'
-                                }
+                                name={ownPlayer.name}
+                                host={ownPlayer.state.isHost}
+                                backgroundColor='rgb(52 211 153)'
                             />
-                        ))}
-                    </ul>
+                            {players.map(player => (
+                                <PlayerCard
+                                    key={player.id}
+                                    name={player.name}
+                                    host={player.state.isHost}
+                                    backgroundColor={
+                                        player.state.isHost
+                                            ? 'rgb(103 232 249)'
+                                            : 'rgb(254 240 138)'
+                                    }
+                                />
+                            ))}
+                        </ul>
+                    </div>
                 </div>
-            </div>
 
-            <div className='flex flex-col gap-4 w-full'>
-                {ownPlayer.state.isHost && (
-                    <Button handler={e => startGame(e)}>Start Game</Button>
-                )}
+                <div className='flex flex-col gap-4 w-full'>
+                    {ownPlayer.state.isHost && (
+                        <Button handler={e => startGame(e)}>Start Game</Button>
+                    )}
 
-                <button
-                    onClick={e => onLeaveLobby(e)}
-                    className='text-2xl font-bold text-neutral-600 bg-white/80 border-2 rounded-md border-neutral-400 p-2'
-                >
-                    Leave
-                </button>
+                    <button
+                        onClick={e => onLeaveLobby(e)}
+                        className='text-2xl font-bold text-neutral-600 bg-white/80 border-2 rounded-md border-neutral-400 p-2'
+                    >
+                        Leave
+                    </button>
+                </div>
             </div>
             <Toast
                 message={toastMessage}
@@ -178,7 +180,7 @@ const Lobby = () => {
                 show={showToast}
                 onClose={hideToast}
             />
-        </div>
+        </>
     );
 };
 

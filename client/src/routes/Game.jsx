@@ -103,37 +103,44 @@ const Game = () => {
     const players = room.users.filter(user => user.id !== ownPlayer.id);
 
     return (
-        <div className='flex flex-col gap-20 items-center'>
-            <h1 className='text-3xl underline'>Game - Number {room.round}</h1>
-            {gameCountdown ? (
-                <div className='flex flex-col justify-center gap-10 mt-6 text-center'>
-                    <h2 className='text-4xl'>Game starts in {counter}</h2>
-                    <h3 className='text-2xl max-w-md text-gray-400 opacity-80'>
-                        Please don't speak in this Phase or let someone see your{' '}
-                        <span className='text-teal-600'>Screen!</span>
-                    </h3>
-                </div>
-            ) : (
-                <>
-                    <QuestionCard question={question} />
-                    <SelectPlayer
-                        players={players}
-                        setPlayer={setPlayerChoice}
-                    />
-                </>
-            )}
-            {allPlayersChosen && ownPlayer.state.isHost && (
-                <Button color='#10b981' handler={e => startDiscussionPhase(e)}>
-                    Next
-                </Button>
-            )}
+        <>
+            <div className='flex flex-col gap-8 items-center justify-between h-full'>
+                <h1 className='text-xl underline'>
+                    Game - Number {room.round}
+                </h1>
+                {gameCountdown ? (
+                    <div className='flex flex-col justify-center gap-10 mt-6 text-center'>
+                        <h2 className='text-4xl'>Game starts in {counter}</h2>
+                        <h3 className='text-2xl max-w-md text-gray-400 opacity-80'>
+                            Please don't speak in this Phase or let someone see
+                            your <span className='text-teal-600'>Screen!</span>
+                        </h3>
+                    </div>
+                ) : (
+                    <>
+                        <QuestionCard question={question} />
+                        <SelectPlayer
+                            players={players}
+                            setPlayer={setPlayerChoice}
+                        />
+                        {allPlayersChosen && ownPlayer.state.isHost && (
+                            <Button
+                                color='#10b981'
+                                handler={e => startDiscussionPhase(e)}
+                            >
+                                Next
+                            </Button>
+                        )}
+                    </>
+                )}
+            </div>
             <Toast
                 message={toastMessage}
                 type={toastType}
                 show={showToast}
                 onClose={hideToast}
             />
-        </div>
+        </>
     );
 };
 

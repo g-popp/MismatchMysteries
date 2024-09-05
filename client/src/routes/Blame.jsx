@@ -93,24 +93,36 @@ const Blame = () => {
     }, [whoWon, ownPlayer.state.blame]);
 
     return (
-        <div className='flex flex-col gap-12 items-center'>
-            <h1 className='text-3xl underline'>Blame Phase</h1>
-            <h2 className='text-xl text-center'>
-                Blame the person you think is the Mismatch
-            </h2>
-            <SelectPlayer players={players} setPlayer={setPlayerBlame} />
-            {allPlayersChosen && ownPlayer.state.isHost && (
-                <Button color='#10b981' handler={e => startRevealPhase(e)}>
-                    Next
-                </Button>
-            )}
+        <>
+            <div className='flex flex-col gap-12 items-center justify-between h-full'>
+                <>
+                    <h1 className='text-xl underline'>Blame Phase</h1>
+                    <h2 className='text-xl text-center'>
+                        Blame the person you think is the Mismatch
+                    </h2>
+                    <SelectPlayer
+                        players={players}
+                        setPlayer={setPlayerBlame}
+                    />
+                </>
+                <>
+                    {allPlayersChosen && ownPlayer.state.isHost && (
+                        <Button
+                            color='#10b981'
+                            handler={e => startRevealPhase(e)}
+                        >
+                            Next
+                        </Button>
+                    )}
+                </>
+            </div>
             <Toast
                 message={toastMessage}
                 type={toastType}
                 show={showToast}
                 onClose={hideToast}
             />
-        </div>
+        </>
     );
 };
 

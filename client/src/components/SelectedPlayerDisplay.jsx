@@ -1,11 +1,11 @@
 /* eslint-disable react/prop-types */
 const SelectedPlayerDisplay = ({ selectedPlayerName }) => {
     return (
-        <h2 className=' flex flex-col gap-8 text-3xl items-center'>
+        <h2 className=' flex flex-col text-xl gap-2 items-center'>
             You chose:{' '}
-            <span className='text-violet-400 text-8xl'>
+            <p className='text-violet-400 text-7xl'>
                 {selectedPlayerName ? selectedPlayerName : 'No one yet'}
-            </span>
+            </p>
         </h2>
     );
 };

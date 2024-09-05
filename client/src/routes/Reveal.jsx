@@ -90,23 +90,23 @@ const Reveal = () => {
     );
 
     return (
-        <div className='flex flex-col gap-20 items-center'>
-            <h1 className='text-3xl underline'>Reveal Phase</h1>
+        <div className='flex flex-col gap-8 items-center justify-between'>
+            <h1 className='text-xl underline'>Reveal Phase</h1>
             {revealCountdown ? (
                 <h2 className='text-4xl'>Reveal in {counter}</h2>
             ) : (
                 <>
-                    <h2 className=' flex flex-col gap-8 text-3xl items-center'>
+                    <h2 className=' flex flex-col gap-2 text-2xl items-center'>
                         The Imposter is:{' '}
                         <span className={`${revealColor} text-8xl`}>
                             {imposter?.name}
                         </span>
                     </h2>
-                    <h2 className=' flex flex-col gap-8 text-3xl items-center'>
+                    <h2 className=' flex flex-col text-xl items-center'>
                         {revealText}
                     </h2>
                     <div>
-                        <h2 className='text-2xl mb-4'>Imposter Question:</h2>
+                        <h2 className='text-xl mb-3'>Imposter Question:</h2>
                         <QuestionCard
                             size={'small'}
                             question={questions.imposterQuestion}
