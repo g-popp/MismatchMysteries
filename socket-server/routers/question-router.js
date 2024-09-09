@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { questionRepository } from '../om/question.js';
+import { EntityId } from 'redis-om';
 
 export const router = Router();
 
@@ -9,8 +10,20 @@ router.put('/', async (req, res) => {
 });
 
 router.get('/', async (req, res) => {
-    const questions = await questionRepository.search().return.all();
-    res.json(questions);
+    const ids = await questionRepository.search().returnAllIds();
+
+    const questions = await Promise.all(
+        ids.map(async id => {
+            const question = await questionRepository.fetch(id);
+            return {
+                id: id,
+                text: question.text,
+                active: question.active
+            };
+        })
+    );
+
+    res.send(questions);
 });
 
 router.get('/:id', async (req, res) => {

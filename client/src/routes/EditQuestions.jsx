@@ -1,4 +1,4 @@
-import React, { forwardRef, useRef, useState } from 'react';
+import React, { forwardRef, useEffect, useRef, useState } from 'react';
 import {
     Trash2,
     Edit,
@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 
 import { defaultQuestions } from '../defaultQuestions';
+import useFetch from '../hooks/useFetch';
 
 const Button = ({
     children,
@@ -149,6 +150,10 @@ const EditQuestions = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [questionToDelete, setQuestionToDelete] = useState(null);
 
+    const { data, loading, error } = useFetch(
+        'http://localhost:4000/questions'
+    );
+
     const scrollAreaRef = useRef(null);
 
     const addQuestion = () => {
@@ -215,85 +220,96 @@ const EditQuestions = () => {
                 ref={scrollAreaRef}
                 className='h-[calc(75vh-10rem)] mt-6 w-full'
             >
-                {questions.map((question, index) => (
-                    <div
-                        key={question.id}
-                        className={`mb-4 p-4 rounded-lg transition-colors duration-200 ${
-                            question.isActive ? 'bg-orange-50' : 'bg-gray-200'
-                        }`}
-                    >
-                        <div className='flex justify-between items-center mb-2'>
-                            <h2
-                                className={`text-lg font-semibold ${
-                                    question.isActive
-                                        ? 'text-orange-800'
-                                        : 'text-gray-600'
-                                }`}
-                            >
-                                Question {index + 1}
-                            </h2>
-                            <div className='flex space-x-2'>
-                                <Button
-                                    variant='ghost'
-                                    size='icon'
-                                    onClick={() => toggleActive(question.id)}
-                                    className={`${
-                                        question.isActive
-                                            ? 'text-green-500 hover:text-green-700 hover:bg-green-100'
-                                            : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+                {loading ? (
+                    <p>Loading...</p>
+                ) : (
+                    data.map((question, index) => (
+                        <div
+                            key={question.id}
+                            className={`mb-4 p-4 rounded-lg transition-colors duration-200 ${
+                                question.active ? 'bg-orange-50' : 'bg-gray-200'
+                            }`}
+                        >
+                            <div className='flex justify-between items-center mb-2'>
+                                <h2
+                                    className={`text-lg font-semibold ${
+                                        question.active
+                                            ? 'text-orange-800'
+                                            : 'text-gray-600'
                                     }`}
                                 >
-                                    {question.isActive ? (
-                                        <ToggleRight className='h-5 w-5' />
-                                    ) : (
-                                        <ToggleLeft className='h-5 w-5' />
-                                    )}
-                                </Button>
-                                <Button
-                                    variant='ghost'
-                                    size='icon'
-                                    onClick={() => toggleEdit(question.id)}
-                                    className='text-blue-500 hover:text-blue-700 hover:bg-blue-100'
-                                    disabled={!question.isActive}
-                                >
-                                    {question.isEditing ? (
-                                        <Check className='h-5 w-5' />
-                                    ) : (
-                                        <Edit className='h-5 w-5' />
-                                    )}
-                                </Button>
-                                <Button
-                                    variant='ghost'
-                                    size='icon'
-                                    onClick={() => openDeleteModal(question.id)}
-                                    className='text-red-400 hover:text-red-600 hover:bg-red-100'
-                                >
-                                    <Trash2 className='h-5 w-5' />
-                                </Button>
+                                    Question {index + 1}
+                                </h2>
+                                <div className='flex space-x-2'>
+                                    <Button
+                                        variant='ghost'
+                                        size='icon'
+                                        onClick={() =>
+                                            toggleActive(question.id)
+                                        }
+                                        className={`${
+                                            question.active
+                                                ? 'text-green-500 hover:text-green-700 hover:bg-green-100'
+                                                : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+                                        }`}
+                                    >
+                                        {question.isActive ? (
+                                            <ToggleRight className='h-5 w-5' />
+                                        ) : (
+                                            <ToggleLeft className='h-5 w-5' />
+                                        )}
+                                    </Button>
+                                    <Button
+                                        variant='ghost'
+                                        size='icon'
+                                        onClick={() => toggleEdit(question.id)}
+                                        className='text-blue-500 hover:text-blue-700 hover:bg-blue-100'
+                                        disabled={!question.active}
+                                    >
+                                        {question.isEditing ? (
+                                            <Check className='h-5 w-5' />
+                                        ) : (
+                                            <Edit className='h-5 w-5' />
+                                        )}
+                                    </Button>
+                                    <Button
+                                        variant='ghost'
+                                        size='icon'
+                                        onClick={() =>
+                                            openDeleteModal(question.id)
+                                        }
+                                        className='text-red-400 hover:text-red-600 hover:bg-red-100'
+                                    >
+                                        <Trash2 className='h-5 w-5' />
+                                    </Button>
+                                </div>
                             </div>
+                            {question.isEditing ? (
+                                <Textarea
+                                    value={question.text}
+                                    onChange={e =>
+                                        updateQuestion(
+                                            question.id,
+                                            e.target.value
+                                        )
+                                    }
+                                    placeholder='Enter your question'
+                                    className='min-h-[100px] text-base'
+                                />
+                            ) : (
+                                <p
+                                    className={`text-base break-words ${
+                                        question.active
+                                            ? 'text-gray-700'
+                                            : 'text-gray-500'
+                                    }`}
+                                >
+                                    {question.text || 'No question text'}
+                                </p>
+                            )}
                         </div>
-                        {question.isEditing ? (
-                            <Textarea
-                                value={question.text}
-                                onChange={e =>
-                                    updateQuestion(question.id, e.target.value)
-                                }
-                                placeholder='Enter your question'
-                                className='min-h-[100px] text-base'
-                            />
-                        ) : (
-                            <p
-                                className={`text-base break-words ${
-                                    question.isActive
-                                        ? 'text-gray-700'
-                                        : 'text-gray-500'
-                                }`}
-                            >
-                                {question.text || 'No question text'}
-                            </p>
-                        )}
-                    </div>
-                ))}
+                    ))
+                )}
             </ScrollArea>
             <button
                 onClick={addQuestion}
