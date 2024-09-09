@@ -5,7 +5,6 @@ export const router = Router();
 
 router.put('/', async (req, res) => {
     const question = await questionRepository.save(req.body);
-    console.log(question);
     res.json(question);
 });
 
