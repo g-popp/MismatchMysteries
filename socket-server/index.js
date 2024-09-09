@@ -6,11 +6,14 @@ import { Server } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
 import getQuestions from './utils/getQuestions.js';
 
+import { router as questionRouter } from './routers/question-router.js';
+
 const app = express();
 const server = createServer(app);
 const PORT = process.env.PORT || 4000;
 
 app.use(cors());
+app.use(express.json());
 
 const io = new Server(server, {
     cors: {
@@ -384,6 +387,8 @@ io.on('connection', socket => {
 
     socket.on('disconnect', () => onDisconnectLobby(socket, userId));
 });
+
+app.use('/questions', questionRouter);
 
 server.listen(PORT, () => {
     console.log('server running on port', PORT);
