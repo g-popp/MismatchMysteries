@@ -58,8 +58,39 @@ const Textarea = forwardRef(({ className = '', ...props }, ref) => {
 });
 Textarea.displayName = 'Textarea';
 
+const Modal = ({ isOpen, onClose, onConfirm, questionId }) => {
+    if (!isOpen) return null;
+
+    return (
+        <div className='fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'>
+            <div className='bg-white p-6 rounded-lg shadow-xl max-w-sm w-full'>
+                <h2 className='text-xl font-bold mb-4'>Confirm Deletion</h2>
+                <p className='mb-6'>
+                    Are you sure you want to delete Question {questionId}?
+                </p>
+                <div className='flex justify-end space-x-4'>
+                    <Button
+                        onClick={onClose}
+                        className='bg-gray-300 hover:bg-gray-400 text-black'
+                    >
+                        Cancel
+                    </Button>
+                    <Button
+                        onClick={onConfirm}
+                        className='bg-red-500 hover:bg-red-600 text-white'
+                    >
+                        Delete
+                    </Button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 const EditQuestions = () => {
     const [questions, setQuestions] = useState(defaultQuestions);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [questionToDelete, setQuestionToDelete] = useState(null);
 
     const scrollAreaRef = useRef(null);
 
@@ -81,8 +112,21 @@ const EditQuestions = () => {
         setQuestions(questions.map(q => (q.id === id ? { ...q, text } : q)));
     };
 
-    const deleteQuestion = id => {
-        setQuestions(questions.filter(q => q.id !== id));
+    const openDeleteModal = id => {
+        setQuestionToDelete(id);
+        setIsModalOpen(true);
+    };
+
+    const closeDeleteModal = () => {
+        setIsModalOpen(false);
+        setQuestionToDelete(null);
+    };
+
+    const confirmDelete = () => {
+        if (questionToDelete !== null) {
+            setQuestions(questions.filter(q => q.id !== questionToDelete));
+            closeDeleteModal();
+        }
     };
 
     const toggleEdit = id => {
@@ -108,7 +152,7 @@ const EditQuestions = () => {
                 ref={scrollAreaRef}
                 className='h-[calc(75vh-10rem)] mt-6 w-full'
             >
-                {questions.map(question => (
+                {questions.map((question, index) => (
                     <div
                         key={question.id}
                         className={`mb-4 p-4 rounded-lg transition-colors duration-200 ${
@@ -123,7 +167,7 @@ const EditQuestions = () => {
                                         : 'text-gray-600'
                                 }`}
                             >
-                                Question {question.id}
+                                Question {index + 1}
                             </h2>
                             <div className='flex space-x-2'>
                                 <Button
@@ -158,7 +202,7 @@ const EditQuestions = () => {
                                 <Button
                                     variant='ghost'
                                     size='icon'
-                                    onClick={() => deleteQuestion(question.id)}
+                                    onClick={() => openDeleteModal(question.id)}
                                     className='text-red-400 hover:text-red-600 hover:bg-red-100'
                                 >
                                     <Trash2 className='h-5 w-5' />
@@ -194,6 +238,12 @@ const EditQuestions = () => {
             >
                 Add New Question
             </button>
+            <Modal
+                isOpen={isModalOpen}
+                onClose={closeDeleteModal}
+                onConfirm={confirmDelete}
+                questionId={questionToDelete || 0}
+            />
         </div>
     );
 };
