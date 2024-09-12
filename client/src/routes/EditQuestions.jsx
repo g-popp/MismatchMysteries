@@ -1,17 +1,22 @@
-import React, { forwardRef, useEffect, useRef, useState } from 'react';
+import React, { forwardRef, useRef, useState } from 'react';
 import {
     Trash2,
     Edit,
     Check,
     ToggleLeft,
     ToggleRight,
-    X,
     Eye,
     EyeOff
 } from 'lucide-react';
 
 import { defaultQuestions } from '../defaultQuestions';
-import useFetch from '../hooks/useFetch';
+import { useQuery } from '@tanstack/react-query';
+
+const fetchQuestions = async () => {
+    const response = await fetch('http://localhost:4000/questions');
+    const data = await response.json();
+    return data;
+};
 
 const Button = ({
     children,
@@ -150,9 +155,18 @@ const EditQuestions = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [questionToDelete, setQuestionToDelete] = useState(null);
 
-    const { data, loading, error } = useFetch(
-        'http://localhost:4000/questions'
-    );
+    const { data, isLoading, isError } = useQuery({
+        queryKey: ['questions'],
+        queryFn: async () => {
+            const response = await fetch('http://localhost:4000/questions');
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch questions');
+            }
+
+            return response.json();
+        }
+    });
 
     const scrollAreaRef = useRef(null);
 
@@ -220,8 +234,10 @@ const EditQuestions = () => {
                 ref={scrollAreaRef}
                 className='h-[calc(75vh-10rem)] mt-6 w-full'
             >
-                {loading ? (
+                {isLoading ? (
                     <p>Loading...</p>
+                ) : isError ? (
+                    <p>Something went wrong...</p>
                 ) : (
                     data.map((question, index) => (
                         <div
