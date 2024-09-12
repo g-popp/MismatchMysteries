@@ -13,6 +13,7 @@
         "@formkit/auto-animate": "^0.8.1",
         "@headlessui/react": "^1.7.17",
         "@phosphor-icons/react": "^2.1.7",
+        "@tanstack/react-query": "^5.56.0",
         "clipboard-copy": "^4.0.1",
         "jotai": "^2.6.0",
         "lucide-react": "^0.438.0",
@@ -23,6 +24,7 @@
         "socket.io-client": "^4.7.2"
     },
     "devDependencies": {
+        "@tanstack/eslint-plugin-query": "^5.53.0",
         "@types/react": "^18.2.37",
         "@types/react-dom": "^18.2.15",
         "@vitejs/plugin-react": "^4.2.0",
