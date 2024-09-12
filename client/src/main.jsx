@@ -16,6 +16,7 @@ import Join from './routes/Join.jsx';
 import Lobby from './routes/Lobby.jsx';
 import Reveal from './routes/Reveal.jsx';
 import EditQuestions from './routes/EditQuestions.jsx';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 const router = createBrowserRouter([
     {
@@ -62,10 +63,14 @@ const router = createBrowserRouter([
     }
 ]);
 
+const queryClient = new QueryClient();
+
 ReactDOM.createRoot(document.getElementById('root')).render(
     <React.StrictMode>
         <SocketProvider>
-            <RouterProvider router={router} />
+            <QueryClientProvider client={queryClient}>
+                <RouterProvider router={router} />
+            </QueryClientProvider>
         </SocketProvider>
     </React.StrictMode>
 );
