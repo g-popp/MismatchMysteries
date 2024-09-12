@@ -149,6 +149,22 @@ const PasswordProtection = ({ onCorrectPassword }) => {
     );
 };
 
+const QuestionSkeleton = () => {
+    return (
+        <div className='mb-4 p-4 rounded-lg bg-orange-50 animate-pulse'>
+            <div className='flex justify-between items-center mb-2'>
+                <div className='h-6 w-24 bg-orange-200 rounded'></div>
+                <div className='flex space-x-2'>
+                    <div className='h-10 w-10 bg-orange-200 rounded-md'></div>
+                    <div className='h-10 w-10 bg-orange-200 rounded-md'></div>
+                    <div className='h-10 w-10 bg-orange-200 rounded-md'></div>
+                </div>
+            </div>
+            <div className='h-24 bg-orange-200 rounded-md'></div>
+        </div>
+    );
+};
+
 const EditQuestions = () => {
     const [questions, setQuestions] = useState(defaultQuestions);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -235,7 +251,11 @@ const EditQuestions = () => {
                 className='h-[calc(75vh-10rem)] mt-6 w-full'
             >
                 {isLoading ? (
-                    <p>Loading...</p>
+                    <>
+                        <QuestionSkeleton />
+                        <QuestionSkeleton />
+                        <QuestionSkeleton />
+                    </>
                 ) : isError ? (
                     <p>Something went wrong...</p>
                 ) : (
