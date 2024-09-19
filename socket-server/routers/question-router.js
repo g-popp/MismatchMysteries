@@ -8,7 +8,7 @@ export const router = Router();
 // PUT New Question
 router.put('/', async (req, res) => {
     const question = req.body;
-    question.createdAt = new Date().toISOString();
+    question.createdAt = new Date();
     question.deletedAt = null;
 
     await questionRepository.save(question);
@@ -17,25 +17,26 @@ router.put('/', async (req, res) => {
 
 // GET All Questions
 router.get('/', async (req, res) => {
-    const ids = await questionRepository.search().returnAllIds();
+    const ids = await questionRepository
+        .search()
+        .sortBy('createdAt', 'ASC')
+        .returnAllIds();
 
-    const questions = await Promise.all(
+    let questions = await Promise.all(
         ids.map(async id => {
             const question = await questionRepository.fetch(id);
+            if (question.deletedAt) return null;
             return {
                 id: id,
                 text: question.text,
-                active: question.active
+                active: question.active,
+                createdAt: question.createdAt
             };
         })
     );
 
-    // sort by date
-    questions.sort((a, b) => {
-        const dateA = new Date(a.createdAt);
-        const dateB = new Date(b.createdAt);
-        return dateA - dateB;
-    });
+    // Filter out null values (deleted questions)
+    questions = questions.filter(question => question !== null);
 
     res.send(questions);
 });
@@ -60,13 +61,11 @@ router.post('/:id', async (req, res) => {
                     ([key]) => !ignoredFields.includes(key)
                 )
             ),
-            updatedAt: new Date().toISOString()
+            updatedAt: new Date()
         }
     ];
     question.text = req.body.text ?? question.text ?? null;
     question.active = req.body.active ?? question.active ?? null;
-
-    console.log(question);
 
     question = await questionRepository.save(question);
 
@@ -97,6 +96,9 @@ router.delete('/', async (req, res) => {
 
 // DELETE Question
 router.delete('/:id', async (req, res) => {
-    const question = await questionRepository.remove(req.params.id);
+    const question = await questionRepository.fetch(req.params.id);
+    question.deletedAt = new Date();
+    await questionRepository.save(question);
+
     res.json(question);
 });
