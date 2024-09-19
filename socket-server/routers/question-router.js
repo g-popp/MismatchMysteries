@@ -1,6 +1,5 @@
 import { Router } from 'express';
 import { questionRepository } from '../om/question.js';
-import { EntityId } from 'redis-om';
 
 export const router = Router();
 
@@ -8,7 +7,11 @@ export const router = Router();
 
 // PUT New Question
 router.put('/', async (req, res) => {
-    const question = await questionRepository.save(req.body);
+    const question = req.body;
+    question.createdAt = new Date().toISOString();
+    question.deletedAt = null;
+
+    await questionRepository.save(question);
     res.json(question);
 });
 
@@ -27,6 +30,13 @@ router.get('/', async (req, res) => {
         })
     );
 
+    // sort by date
+    questions.sort((a, b) => {
+        const dateA = new Date(a.createdAt);
+        const dateB = new Date(b.createdAt);
+        return dateA - dateB;
+    });
+
     res.send(questions);
 });
 
@@ -40,8 +50,23 @@ router.get('/:id', async (req, res) => {
 router.post('/:id', async (req, res) => {
     let question = await questionRepository.fetch(req.params.id);
 
-    question.text = req.body.text ?? null;
-    question.active = req.body.active ?? null;
+    const ignoredFields = ['createdAt', 'history', 'deletedAt'];
+
+    question.history = [
+        ...(question.history || []),
+        {
+            ...Object.fromEntries(
+                Object.entries(question).filter(
+                    ([key]) => !ignoredFields.includes(key)
+                )
+            ),
+            updatedAt: new Date().toISOString()
+        }
+    ];
+    question.text = req.body.text ?? question.text ?? null;
+    question.active = req.body.active ?? question.active ?? null;
+
+    console.log(question);
 
     question = await questionRepository.save(question);
 
@@ -57,6 +82,17 @@ router.post('/:id/toggle', async (req, res) => {
     question = await questionRepository.save(question);
 
     res.send(question);
+});
+
+// Delete All Questions
+router.delete('/', async (req, res) => {
+    await questionRepository.createIndex();
+    const ids = await questionRepository.search().returnAllIds();
+
+    console.log(ids);
+
+    await Promise.all(ids.map(id => questionRepository.remove(id)));
+    res.send('All questions deleted');
 });
 
 // DELETE Question
