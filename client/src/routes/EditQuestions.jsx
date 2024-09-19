@@ -9,13 +9,16 @@ import {
     EyeOff
 } from 'lucide-react';
 
-import { defaultQuestions } from '../defaultQuestions';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 const fetchQuestions = async () => {
     const response = await fetch('http://localhost:4000/questions');
-    const data = await response.json();
-    return data;
+
+    if (!response.ok) {
+        throw new Error('Failed to fetch questions');
+    }
+
+    return response.json();
 };
 
 const Button = ({
@@ -166,21 +169,56 @@ const QuestionSkeleton = () => {
 };
 
 const EditQuestions = () => {
-    const [questions, setQuestions] = useState(defaultQuestions);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [questionToDelete, setQuestionToDelete] = useState(null);
+    const [questionToEdit, setQuestionToEdit] = useState(null);
+    const queryClient = useQueryClient();
 
     const { data, isLoading, isError } = useQuery({
         queryKey: ['questions'],
-        queryFn: async () => {
-            const response = await fetch('http://localhost:4000/questions');
+        queryFn: fetchQuestions,
+        staleTime: 3000
+    });
 
-            if (!response.ok) {
-                throw new Error('Failed to fetch questions');
-            }
+    const toggleActiveMutation = useMutation({
+        mutationFn: id => {
+            return fetch(`http://localhost:4000/questions/${id}/toggle`, {
+                method: 'POST'
+            });
+        },
+        onSuccess: () =>
+            queryClient.invalidateQueries({ queryKey: ['questions'] })
+    });
 
-            return response.json();
+    const deleteMutation = useMutation({
+        mutationFn: id => {
+            return fetch(`http://localhost:4000/questions/${id}`, {
+                method: 'DELETE'
+            });
+        },
+        onSuccess: () =>
+            queryClient.invalidateQueries({ queryKey: ['questions'] }),
+        onError: () => alert('Failed to delete question')
+    });
+
+    const editMutation = useMutation({
+        mutationFn: question => {
+            return fetch(`http://localhost:4000/questions/${question.id}`, {
+                method: 'POST',
+                body: JSON.stringify({ text: question.text }),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['questions'] });
+            setQuestionToEdit(null);
+        },
+        onError: () => {
+            alert('Failed to update question');
+            setQuestionToDelete(null);
         }
     });
 
@@ -198,8 +236,8 @@ const EditQuestions = () => {
         ]);
     };
 
-    const updateQuestion = (id, text) => {
-        setQuestions(questions.map(q => (q.id === id ? { ...q, text } : q)));
+    const updateQuestion = question => {
+        editMutation.mutate(question);
     };
 
     const openDeleteModal = id => {
@@ -214,25 +252,13 @@ const EditQuestions = () => {
 
     const confirmDelete = () => {
         if (questionToDelete !== null) {
-            setQuestions(questions.filter(q => q.id !== questionToDelete));
+            deleteMutation.mutate(questionToDelete);
             closeDeleteModal();
         }
     };
 
     const toggleEdit = id => {
-        setQuestions(
-            questions.map(q =>
-                q.id === id ? { ...q, isEditing: !q.isEditing } : q
-            )
-        );
-    };
-
-    const toggleActive = id => {
-        setQuestions(
-            questions.map(q =>
-                q.id === id ? { ...q, isActive: !q.isActive } : q
-            )
-        );
+        setQuestionToEdit(id);
     };
 
     if (!isAuthenticated) {
@@ -257,7 +283,17 @@ const EditQuestions = () => {
                         <QuestionSkeleton />
                     </>
                 ) : isError ? (
-                    <p>Something went wrong...</p>
+                    <div className='p-4 rounded-lg bg-red-200'>
+                        <p className='text-red-600 text-lg'>
+                            Failed to fetch questions
+                        </p>
+                    </div>
+                ) : data.length === 0 ? (
+                    <div className='p-4 rounded-lg bg-gray-200'>
+                        <p className='text-gray-600 text-lg'>
+                            No questions found
+                        </p>
+                    </div>
                 ) : (
                     data.map((question, index) => (
                         <div
@@ -281,7 +317,9 @@ const EditQuestions = () => {
                                         variant='ghost'
                                         size='icon'
                                         onClick={() =>
-                                            toggleActive(question.id)
+                                            toggleActiveMutation.mutate(
+                                                question.id
+                                            )
                                         }
                                         className={`${
                                             question.active
@@ -298,12 +336,21 @@ const EditQuestions = () => {
                                     <Button
                                         variant='ghost'
                                         size='icon'
-                                        onClick={() => toggleEdit(question.id)}
+                                        onClick={() => toggleEdit(question)}
                                         className='text-blue-500 hover:text-blue-700 hover:bg-blue-100'
                                         disabled={!question.active}
                                     >
-                                        {question.isEditing ? (
-                                            <Check className='h-5 w-5' />
+                                        {questionToEdit &&
+                                        question.id === questionToEdit.id ? (
+                                            <div
+                                                onClick={() =>
+                                                    updateQuestion(
+                                                        questionToEdit
+                                                    )
+                                                }
+                                            >
+                                                <Check className='h-5 w-5' />
+                                            </div>
                                         ) : (
                                             <Edit className='h-5 w-5' />
                                         )}
@@ -320,14 +367,15 @@ const EditQuestions = () => {
                                     </Button>
                                 </div>
                             </div>
-                            {question.isEditing ? (
+                            {questionToEdit &&
+                            question.id === questionToEdit.id ? (
                                 <Textarea
-                                    value={question.text}
+                                    value={questionToEdit.text}
                                     onChange={e =>
-                                        updateQuestion(
-                                            question.id,
-                                            e.target.value
-                                        )
+                                        setQuestionToEdit({
+                                            ...questionToEdit,
+                                            text: e.target.value
+                                        })
                                     }
                                     placeholder='Enter your question'
                                     className='min-h-[100px] text-base'
